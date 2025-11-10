@@ -23,8 +23,8 @@ class Environment ():
         self.maze_surface.fill('black')
         self._draw_maze(self.maze_surface)
 
-        self.siren_chase_path = 'pacman_game/sounds/Siren Background Sound.wav'
-        self.siren_vulnerable_path = 'pacman_game/sounds/Power Up Sound.wav'
+        self.siren_chase_path = 'src/sounds/Siren Background Sound.wav'
+        self.siren_vulnerable_path = 'src/sounds/Power Up Sound.wav'
         pygame.mixer.music.load(self.siren_chase_path)
         pygame.mixer.music.set_volume(0.2)
         pygame.mixer.music.play(loops=-1)

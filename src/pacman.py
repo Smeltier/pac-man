@@ -1,6 +1,6 @@
 import pygame
-from entity import Entity
 
+from entity import Entity
 
 class PacMan(Entity):
 
