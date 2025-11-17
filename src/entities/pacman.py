@@ -1,8 +1,8 @@
 import pygame
 
-from entity import Entity
+from src.entities.entity import Entity
 
-class PacMan(Entity):
+class PacMan (Entity):
 
     def __init__(self, x, y, environment):
         super().__init__(x, y, environment)
@@ -39,10 +39,7 @@ class PacMan(Entity):
 
         matrix_height = len(self._ENVIRONMENT.matrix)
         matrix_width  = len(self._ENVIRONMENT.matrix[0])
-
-        if not (0 <= row <= matrix_height and 0 <= col <= matrix_width):
-            return False
-        return True
+        return (0 <= row < matrix_height) and (0 <= col < matrix_width)
 
     def _get_coordinates(self) -> tuple[int, int]:
         """ Converte a posição do personagem no ambiente para coordenadas na matriz. """
@@ -187,3 +184,10 @@ class PacMan(Entity):
         self._update_orientation(pygame.key.get_pressed())
         self._handle_moviment()
         self._update_sprite(delta_time)
+
+    def reset(self, x, y):
+        """ Reseta o personagem. """
+
+        self.position = pygame.Vector2((x, y))
+        self._current_orientation = 0
+        self._next_orientation    = 0

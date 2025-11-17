@@ -1,7 +1,8 @@
 import pygame
 
-from environment import Environment
-from pacman import PacMan
+from src.environment import Environment
+from src.entities.pacman import PacMan
+from src.entities.ghosts import Blinky, Pinky, Inky, Clyde
 
 pygame.init()
 pygame.mixer.init()
@@ -19,10 +20,45 @@ environment = Environment(
     maze_file = 'src/configs/maze.txt'
 )
 
+cw = environment.cell_width
+ch = environment.cell_height
+
 environment.add_entity(
     PacMan (
-        x = 15 * environment.cell_width + environment.cell_width // 2, 
-        y = 18 * environment.cell_height + environment.cell_height // 2, 
+        x = 15 * cw + cw // 2, 
+        y = 18 * ch + ch // 2, 
+        environment = environment
+    )
+)
+
+environment.add_entity(
+    Blinky (
+        x = 15 * cw + cw // 2,
+        y = 12 * ch + ch // 2,
+        environment = environment
+    )
+)
+
+environment.add_entity(
+    Pinky (
+        x = 15 * cw + cw // 2,
+        y = 14 * ch + ch // 2,
+        environment = environment
+    )
+)
+
+environment.add_entity(
+    Inky (
+        x = 13 * cw + cw // 2,
+        y = 14 * ch + ch // 2,
+        environment = environment
+    )
+)
+
+environment.add_entity(
+    Clyde (
+        x = 17 * cw + cw // 2,
+        y = 14 * ch + ch // 2,
         environment = environment
     )
 )
