@@ -1,12 +1,19 @@
 import pygame
 
-from src.entities.ghost import Ghost, GhostState
+from src.entities.ghost import Ghost
+from src.states import GhostState
 
 class Blinky (Ghost):
-    """ Fantasma vermelho (Blinky). Mira diretamente na posição do Pac-Man. """
-
     def __init__(self, x, y, environment):
-        super().__init__(x, y, environment, 'src/images/ghost_0.png')
+        sprite_paths = {
+            1: 'src/images/blinky_up.png',    
+            2: 'src/images/blinky_down.png',  
+            3: 'src/images/blinky_left.png',  
+            4: 'src/images/blinky_right.png', 
+        }
+
+        super().__init__(x, y, environment, sprite_paths)
+        
         self.scatter_target = (2, 27)
         self.mode = GhostState.SCATTER
         self._release_ghost()
@@ -18,10 +25,16 @@ class Blinky (Ghost):
         return False
 
 class Pinky (Ghost):
-    """ Fantasma rosa (Pinky). Mira 4 casas à frente da direção atual do Pac-Man. """
-
     def __init__(self, x, y, environment):
-        super().__init__(x, y, environment, 'src/images/ghost_1.png')
+        sprite_paths = {
+            1: 'src/images/pinky_up.png',    
+            2: 'src/images/pinky_down.png',  
+            3: 'src/images/pinky_left.png',  
+            4: 'src/images/pinky_right.png', 
+        }
+
+        super().__init__(x, y, environment, sprite_paths)
+        
         self.scatter_target = (2, 2)
         self._exit_timer = pygame.time.get_ticks() + 500
 
@@ -32,28 +45,33 @@ class Pinky (Ghost):
         elif pacman._current_orientation == 2:  prow += 4
         elif pacman._current_orientation == 3:  pcol -= 4
         elif pacman._current_orientation == 4:  pcol += 4
-
         return (prow, pcol)
     
     def _should_exit_house(self, pacman, all_ghosts) -> bool:
         return pygame.time.get_ticks() >= self._exit_timer
 
 class Inky (Ghost):
-    """ Fantasma ciano (Inky). Usa um vetor do Blinky até 2 casas à frente do Pac-Man. """
-
     def __init__(self, x, y, environment):
-        super().__init__(x, y, environment, 'src/images/ghost_2.png')
-        self.scatter_target = (34, 27)
+        sprite_paths = {
+            1: 'src/images/inky_up.png',    
+            2: 'src/images/inky_down.png',  
+            3: 'src/images/inky_left.png',  
+            4: 'src/images/inky_right.png', 
+        }
+
+        super().__init__(x, y, environment, sprite_paths)
+        
+        self.scatter_target = (30, 27) 
         self.points_to_exit = 30
 
     def _compute_target(self, pacman, all_ghosts):
         blinky = self.get_ghost(all_ghosts, Blinky)
-
         if not blinky:
             return pacman._get_coordinates()
+        
         brow, bcol = blinky._get_coordinates()
-
         prow, pcol = pacman._get_coordinates()
+        
         if pacman._current_orientation == 1:    prow -= 2
         elif pacman._current_orientation == 2:  prow += 2
         elif pacman._current_orientation == 3:  pcol -= 2
@@ -61,18 +79,23 @@ class Inky (Ghost):
 
         target_row = 2 * prow - brow
         target_col = 2 * pcol - bcol
-        
         return (target_row, target_col)
     
     def _should_exit_house(self, pacman, all_ghosts) -> bool:
         return pacman.total_points >= self.points_to_exit
 
 class Clyde (Ghost):
-    """ Fantasma laranja (Clyde). Persegue o Pac-Man, mas foge se chegar perto. """
-
     def __init__(self, x, y, environment):
-        super().__init__(x, y, environment, 'src/images/ghost_3.png')
-        self.scatter_target = (34, 2)
+        sprite_paths = {
+            1: 'src/images/clyde_up.png',    
+            2: 'src/images/clyde_down.png',  
+            3: 'src/images/clyde_left.png',  
+            4: 'src/images/clyde_right.png', 
+        }
+        
+        super().__init__(x, y, environment, sprite_paths)
+        
+        self.scatter_target = (30, 2)
         self.points_to_exit = 60
 
     def _compute_target(self, pacman, all_ghosts):
@@ -80,7 +103,6 @@ class Clyde (Ghost):
         grow, gcol = self._get_coordinates()
 
         distance_sq = (prow - grow)**2 + (pcol - gcol)**2
-
         if distance_sq > 64: 
             return (prow, pcol)
         else: 
