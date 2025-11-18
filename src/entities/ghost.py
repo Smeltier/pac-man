@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+
 from abc import abstractmethod
 
 from src.entities.entity import Entity

@@ -85,6 +85,7 @@ class Maze ():
             for line in f:
                 row = [int(x) for x in line.split()]
                 maze.append(row)
+                
         return maze
     
     def _load_wall_matrix (self) -> list[list[int]]:
@@ -92,6 +93,7 @@ class Maze ():
         for row in self._maze_layout:
             new_row = [-1 if x > 2 else x for x in row]
             matrix.append(new_row)
+
         return matrix
     
     def _count_tablets (self) -> int:
@@ -100,6 +102,7 @@ class Maze ():
             for col in range(self._maze_cols):
                 if self._matrix[row][col] == 1 or self._matrix[row][col] == 2:
                     count += 1
+
         return count
     
     def _create_wall_surface (self) -> pygame.Surface:
