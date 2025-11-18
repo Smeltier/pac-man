@@ -4,6 +4,7 @@ from src.entities.ghost import Ghost
 from src.states import GhostState
 
 class Blinky (Ghost):
+
     def __init__(self, x, y, environment):
         sprite_paths = {
             1: 'src/images/blinky_up.png',    
@@ -13,16 +14,20 @@ class Blinky (Ghost):
         }
 
         super().__init__(x, y, environment, sprite_paths)
-        
+
+        self.start_mode = GhostState.SCATTER
         self.scatter_target = (2, 27)
         self.mode = GhostState.SCATTER
         self._release_ghost()
+        self._exit_timer = 0 
 
     def _compute_target(self, pacman, all_ghosts):
         return pacman._get_coordinates()
     
     def _should_exit_house(self, pacman, all_ghosts) -> bool:
-        return False
+        if self._exit_timer > 0:
+            return pygame.time.get_ticks() >= self._exit_timer
+        return True
 
 class Pinky (Ghost):
     def __init__(self, x, y, environment):
