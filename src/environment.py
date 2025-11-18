@@ -1,180 +1,173 @@
-import math
 import pygame
 
+from src.hud import HUD
+from src.maze import Maze
+from src.states import GameState, GhostState
+from src.audio_manager import AudioManager
+
 class Environment ():
-    def __init__(self, screen, maze_file: str) -> None:
-        self.screen = screen
-        self.width = screen.get_width()
-        self.height = screen.get_height()
-        self.text_font = pygame.font.Font(None, 36)
-        self.game_state = 'chase'
-        self.vulnerable_timer = 0
-        self.vulnerable_duration = 7000
-        self.wall_color = 'blue'
-        self.cell_width = self.width // 30
-        self.cell_height = self.height // 32
-        self.entities = []
-        self.maze = self._load_maze(maze_file)
-        self.maze_rows = len(self.maze)
-        self.maze_cols = len(self.maze[0])
-        self.matrix = self._load_walls()
-        self.total_tablets = self._count_tablets()
-        self.maze_surface = pygame.Surface((self.width, self.height))
-        self.maze_surface.fill('black')
-        self._draw_maze(self.maze_surface)
-
-        self.siren_chase_path = 'src/sounds/Siren Background Sound.wav'
-        self.siren_vulnerable_path = 'src/sounds/Power Up Sound.wav'
-        pygame.mixer.music.load(self.siren_chase_path)
-        pygame.mixer.music.set_volume(0.2)
-        pygame.mixer.music.play(loops=-1)
-
-    def _load_maze(self, maze_file: str) -> list[list[int]]:
-        """ Carrega um labirinto a partir de um arquivo .txt """
-
-        maze = []
-        with open(maze_file, 'r') as f:
-            for line in f:
-                row = [int(x) for x in line.split()]
-                maze.append(row)
-        return maze
     
-    def _load_walls(self) -> list[list[int]]:
-        """ Transforma o labirinto em uma matrix numérica mais simples, formada por -1, 0, 1 e 2. """
+    VULNERABLE_DURATION_MS = 7000
+    CHASE_DURATION_MS = 20000
+    SCATTER_DURATION_MS = 7000
+    GAME_OVER_SCREEN_DURATION_MS = 4000 
+    INITIAL_LIVES = 3
 
-        matrix = []
-        for row in self.maze:
-            new_row = [-1 if x > 2 else x for x in row]
-            matrix.append(new_row)
-        return matrix
-    
-    def _count_tablets(self) -> int:
-        """ Conta a quantidade de pastilhas presentes no labirinto. """
-
-        count = 0
-        for row in range(self.maze_rows):
-            for col in range(self.maze_cols):
-                if self.matrix[row][col] == 1 or self.matrix[row][col] == 2:
-                    count += 1
-        return count
-    
-    def _draw_maze(self, surface) -> None:
-        """ Desenha as paredes do labirinto em `surface`. """
-
-        color = 'blue'
-        for row in range(self.maze_rows):
-            for col in range(self.maze_cols):
-                x, y = col * self.cell_width, row * self.cell_height
-
-                if self.maze[row][col] == 3:
-                    x += self.cell_height // 2
-                    pygame.draw.line(surface, color, (x, y), (x, y + self.cell_height))
-
-                elif self.maze[row][col] == 4:
-                    y += self.cell_width // 2
-                    pygame.draw.line(surface, color, (x, y), (x + self.cell_height, y))
-
-                elif self.maze[row][col] == 5:
-                    x -= self.cell_height // 2
-                    y += self.cell_width // 2
-                    pygame.draw.arc(surface, color, (x, y, self.cell_height, self.cell_width), 0, math.pi / 2)
-
-                elif self.maze[row][col] == 6:
-                    x += self.cell_height // 2
-                    y += self.cell_width // 2
-                    pygame.draw.arc(surface, color, (x, y, self.cell_height, self.cell_width), math.pi / 2, math.pi)
-
-                elif self.maze[row][col] == 7:
-                    x += self.cell_height // 2
-                    y -= self.cell_width // 2
-                    pygame.draw.arc(surface, color, (x, y, self.cell_height, self.cell_width), math.pi, 3 * math.pi / 2)
-
-                elif self.maze[row][col] == 8:
-                    x -= self.cell_height // 2
-                    y -= self.cell_width // 2
-                    pygame.draw.arc(surface, color, (x, y, self.cell_height, self.cell_width), 3 * math.pi / 2, 2 * math.pi)
-
-                elif self.maze[row][col] == 9:
-                    y += self.cell_width // 2
-                    pygame.draw.line(surface, "white", (x, y), (x + self.cell_height, y))
-
-    def _draw_tablets(self):
-        """ Desenha as pastilhas. """
-
-        color = 'white'
-        for row in range(self.maze_rows):
-            for col in range(self.maze_cols):
-                x, y = col * self.cell_width, row * self.cell_height
-
-                if self.matrix[row][col] == 1:
-                    x += self.cell_height // 2
-                    y += self.cell_width // 2
-                    pygame.draw.circle(self.screen, color, (x, y), 2)
-
-                if self.matrix[row][col] == 2:
-                    x += self.cell_height // 2
-                    y += self.cell_width // 2
-                    pygame.draw.circle(self.screen, color, (x, y), 6)
-
-    def _draw_entities(self) -> None:
-        """ Desenha as entidades. """
-        for entity in self.entities:
-            entity.draw(self.screen)
-
-    def _draw_score(self) -> None:
-        """ Desenha o placar do jogador na tela. """
-
-        if not self.entities: return
-
-        player_score = self.entities[0].total_points
-        text_surface = self.text_font.render(f"SCORE: {player_score}", True, 'white')
-        text_rect = text_surface.get_rect(topleft=(10, 10))
-        self.screen.blit(text_surface, text_rect)
-
-    def draw(self) -> None:
-        """ Desenha o ambiente e suas entidades. """
-
-        self.screen.blit(self.maze_surface, (0, 0))
-        self._draw_tablets()
-        self._draw_entities()
-        self._draw_score()
-
-    def add_entity(self, entity) -> None:
-        """ Adiciona uma nova entidade ao ambiente. """
-
-        if entity is None: 
-            raise ValueError('Entidade inválida.')
-        if entity not in self.entities: 
-            self.entities.append(entity)
-
-    def remove_entity(self, entity) -> None:
-        """ Remove uma entidade do ambiente. """
-        self.entities = [e for e in self.entities if e is not entity]
-
-
-    def set_vulnerable(self) -> None:
-        """ Ativa o estado 'vulnerável' (fantasmas azuis). """
+    def __init__ (self, screen, maze_file: str):
         
-        if self.game_state == 'chase':
-            self.game_state = 'vulnerable'
-            pygame.mixer.music.load(self.siren_vulnerable_path)
-            pygame.mixer.music.play(loops=-1)
-            self.vulnerable_timer = pygame.time.get_ticks()
+        self._screen = screen
 
-    def set_chase(self) -> None:
-        """ Ativa o estado 'perseguição' (normal). """
-        
-        self.game_state = 'chase'
-        pygame.mixer.music.load(self.siren_chase_path)
-        pygame.mixer.music.play(loops=-1)
+        self._game_state = GameState.CHASE
+        self._entities = []
+        self._lives_remaining = self.INITIAL_LIVES
 
+        self._vulnerable_timer_ms = 0
+        self._game_over_start_time_ms = 0
+        self._global_mode_change_time_ms = 0
+        self._current_global_ghost_mode = GhostState.SCATTER
+
+        cell_width  = screen.get_width() // 30
+        cell_height = screen.get_height() // 32
+
+        self._maze = Maze(maze_file, cell_width, cell_height)
+        self._hud  = HUD(screen)
+        self._audio_manager = AudioManager()
+
+        self._maze_matrix = self._maze.matrix
+        self._cell_width = self._maze.cell_width
+        self._cell_height = self._maze.cell_height
+
+        self._audio_manager.play_chase()
+
+    # MÉTODOS PÚBLICOS
+    
     def update(self, delta_time: float) -> None:
-        """ Atualiza o ambiente e suas entidades de acordo com o passar do tempo. """
+        if self._game_state in [GameState.GAME_OVER, GameState.VICTORY]:
+            self._handle_end_game_timer()
+            return 
 
-        if self.game_state == 'vulnerable':
-            now = pygame.time.get_ticks()
-            if now - self.vulnerable_timer > self.vulnerable_duration:
-                self.set_chase()
-
-        for entity in self.entities:
+        if self._game_state == GameState.VULNERABLE:
+            self._check_vulnerable_timeout()
+        
+        for entity in self._entities[:]:
             entity.update(delta_time)
+
+    def draw (self) -> None:
+        self._screen.fill('black')
+        
+        self._maze.draw_walls(self._screen)
+        self._maze.draw_tablets(self._screen)
+        
+        for entity in self._entities:
+            entity.draw(self._screen)
+            
+        if self._entities:
+            player_score = self._entities[0].total_points
+            self._hud.draw_score(player_score, self._lives_remaining)
+        
+        if self._game_state == GameState.GAME_OVER:
+            self._hud.draw_game_over()
+        
+        if self._game_state == GameState.VICTORY:
+            self._hud.draw_victory()
+
+    def add_entity (self, entity) -> None:
+        if entity is None:
+            raise ValueError('Entidade inválida.')
+
+        if entity not in self._entities:
+            self._entities.append(entity)
+    
+    def remove_entity (self, entity) -> None:
+        self._entities = [e for e in self._entities if e is not entity]
+
+    def set_vulnerable (self) -> None:
+        if self._game_state == GameState.CHASE:
+            self._game_state = GameState.VULNERABLE
+            self._audio_manager.play_vulnerable()
+            self._vulnerable_timer_ms = pygame.time.get_ticks()
+    
+    def set_chase (self) -> None:
+        self._game_state = GameState.CHASE
+        self._audio_manager.play_chase()
+
+    def handle_player_death(self):
+        self._lives_remaining -= 1
+
+        if self._lives_remaining > 0:
+            self._reset_level()
+        else:
+            self._game_state = GameState.GAME_OVER
+            self._game_over_start_time_ms = pygame.time.get_ticks()
+
+    def handle_victory(self):
+        self._game_state = GameState.VICTORY
+        
+        self._audio_manager.stop_waka() 
+        pygame.mixer.music.stop() 
+        
+        self._game_over_start_time_ms = pygame.time.get_ticks()
+
+    def get_global_ghost_mode (self) -> GhostState:
+        now = pygame.time.get_ticks()
+
+        if self._current_global_ghost_mode == GhostState.SCATTER:
+            if now - self._global_mode_change_time_ms > self.SCATTER_DURATION_MS:
+                self._current_global_ghost_mode = GhostState.CHASE
+                self._global_mode_change_time_ms = now
+        else:
+            if now - self._global_mode_change_time_ms > self.CHASE_DURATION_MS:
+                self._current_global_ghost_mode = GhostState.SCATTER
+                self._global_mode_change_time_ms = now
+
+        return self._current_global_ghost_mode
+    
+    @property
+    def game_state(self):
+        return self._game_state
+    
+    @property
+    def matrix(self):
+        return self._maze_matrix
+    
+    @property
+    def cell_width(self):
+        return self._cell_width
+    
+    @property
+    def cell_height(self):
+        return self._cell_height
+    
+    @property
+    def entities(self):
+        return self._entities
+    
+    @property
+    def audio_manager(self):
+        return self._audio_manager
+    
+    @property
+    def maze(self):
+        return self._maze
+
+    # MÉTODOS PRIVADOS 
+
+    def _reset_level(self):
+        pygame.time.delay(1000) 
+        self.set_chase()
+        self._global_mode_change_time_ms = pygame.time.get_ticks()
+        self._current_global_ghost_mode = GhostState.SCATTER
+
+        for entity in self._entities:
+            if hasattr(entity, 'reset'):
+                entity.reset()
+
+    def _handle_end_game_timer(self):
+        now = pygame.time.get_ticks()
+        if now - self._game_over_start_time_ms > self.GAME_OVER_SCREEN_DURATION_MS:
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+    def _check_vulnerable_timeout(self):
+        now = pygame.time.get_ticks()
+        if now - self._vulnerable_timer_ms > self.VULNERABLE_DURATION_MS:
+            self.set_chase()
