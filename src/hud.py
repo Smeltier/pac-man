@@ -2,34 +2,52 @@ import pygame
 
 class HUD ():
 
+    TEXT_FONT_SIZE = 36
+    GAME_OVER_FONT_SIZE = 72
+    SCORE_COLOR = 'white'
+    LIVES_COLOR = 'yellow'
+    GAME_OVER_COLOR = 'red'
+    VICTORY_COLOR = 'green'
+    PADDING = 10
+
     def __init__(self, screen):
-        self.screen = screen
-        self.width = screen.get_width()
-        self.height = screen.get_height()
+        
+        self._screen = screen
+        self._screen_width = screen.get_width()
+        self._screen_height = screen.get_height()
 
         try:
-            self.text_font = pygame.font.Font(None, 36)
-            self.game_over_font = pygame.font.Font(None, 72) 
+            self._text_font = pygame.font.Font(None, self.TEXT_FONT_SIZE)
+            self._game_over_font = pygame.font.Font(None, self.GAME_OVER_FONT_SIZE) 
         except IOError:
-            print("Fonte padrão não encontrada, usando fonte de sistema.")
-            self.text_font = pygame.font.SysFont(pygame.font.get_default_font(), 36)
-            self.game_over_font = pygame.font.SysFont(pygame.font.get_default_font(), 72)
+            self._text_font = pygame.font.SysFont(pygame.font.get_default_font(), self.TEXT_FONT_SIZE)
+            self._game_over_font = pygame.font.SysFont(pygame.font.get_default_font(), self.GAME_OVER_FONT_SIZE)
+
+    # MÉTODOS PÚBLICOS
 
     def draw_score(self, score, lives):
-        text_surface = self.text_font.render(f"SCORE: {score}", True, 'white')
-        text_rect = text_surface.get_rect(topleft = (10, 10))
-        self.screen.blit(text_surface, text_rect)
-
-        lives_surface = self.text_font.render(f"LIVES: {lives}", True, 'yellow')
-        lives_rect = lives_surface.get_rect(topright = (self.width - 10, 10))
-        self.screen.blit(lives_surface, lives_rect)
+        self._draw_score_text(score)
+        self._draw_lives_text(lives)
 
     def draw_game_over(self):
-        text_surface = self.game_over_font.render("GAME OVER", True, 'red')
-        text_rect = text_surface.get_rect(center = (self.width // 2, self.height // 2))
-        self.screen.blit(text_surface, text_rect)
+        self._draw_centered_message("GAME OVER", self.GAME_OVER_COLOR)
 
     def draw_victory(self):
-        text_surface = self.game_over_font.render("YOU WIN!", True, 'green')
-        text_rect = text_surface.get_rect(center = (self.width // 2, self.height // 2))
-        self.screen.blit(text_surface, text_rect)
+        self._draw_centered_message("YOU WIN!", self.VICTORY_COLOR)
+
+    # MÉTODOS PRIVADOS
+
+    def _draw_score_text(self, score):
+        text_surface = self._text_font.render(f"SCORE: {score}", True, self.SCORE_COLOR)
+        text_rect = text_surface.get_rect(topleft = (self.PADDING, self.PADDING))
+        self._screen.blit(text_surface, text_rect)
+
+    def _draw_lives_text(self, lives):
+        lives_surface = self._text_font.render(f"LIVES: {lives}", True, self.LIVES_COLOR)
+        lives_rect = lives_surface.get_rect(topright = (self._screen_width - self.PADDING, self.PADDING))
+        self._screen.blit(lives_surface, lives_rect)
+
+    def _draw_centered_message(self, message, color):
+        text_surface = self._game_over_font.render(message, True, color)
+        text_rect = text_surface.get_rect(center = (self._screen_width // 2, self._screen_height // 2))
+        self._screen.blit(text_surface, text_rect)
