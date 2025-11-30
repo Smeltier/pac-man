@@ -3,7 +3,7 @@ import pygame
 
 class Maze ():
 
-    WALL_COLOR = 'blue'
+    WALL_COLOR = 'cyan'
     DOOR_COLOR = 'white'
     SMALL_PELLET_COLOR = 'white'
     POWER_PELLET_COLOR = 'white'
@@ -61,9 +61,9 @@ class Maze ():
     def total_tablets(self):
         return self._total_tablets
     
-    @total_tablets.setter
-    def total_tablets(self, value):
-        self._total_tablets = value
+    # @total_tablets.setter
+    # def total_tablets(self, value):
+    #     self._total_tablets = value
     
     @property
     def cell_width(self):

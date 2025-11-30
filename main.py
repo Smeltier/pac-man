@@ -1,8 +1,9 @@
 import pygame
 
-from src.environment import Environment
+from src.core.environment import Environment
 from src.entities.pacman import PacMan
 from src.entities.ghosts import Blinky, Pinky, Inky, Clyde
+from src.entities.entity import Entity
 
 pygame.init()
 pygame.mixer.init()

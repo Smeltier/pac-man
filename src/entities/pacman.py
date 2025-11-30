@@ -1,7 +1,7 @@
 import pygame
 
 from src.entities.entity import Entity
-from src.states import GhostState, GameState 
+from src.core.states import GhostState, GameState 
 
 class PacMan (Entity):
 
@@ -56,7 +56,7 @@ class PacMan (Entity):
         self._ENVIRONMENT.audio_manager.stop_waka()
         self._ENVIRONMENT.handle_player_death()
 
-    def reset(self):
+    def reset(self) -> None:
         self.position = self._start_position.copy()
         self._current_orientation = 0
         self._next_orientation    = 0

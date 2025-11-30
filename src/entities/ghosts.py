@@ -1,7 +1,7 @@
 import pygame
 
 from src.entities.ghost import Ghost
-from src.states import GhostState
+from src.core.states import GhostState
 
 class Blinky (Ghost):
 

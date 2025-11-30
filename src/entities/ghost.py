@@ -5,7 +5,7 @@ import math
 from abc import abstractmethod
 
 from src.entities.entity import Entity
-from src.states import GhostState, GameState 
+from src.core.states import GhostState, GameState 
 
 class Ghost (Entity):
     
@@ -86,7 +86,7 @@ class Ghost (Entity):
         self._current_mode = GhostState.EATEN
         self._is_immune = True 
 
-    def reset(self):
+    def reset(self) -> None:
         self.position = self._start_position.copy()
         self._current_orientation = 4
         self._current_mode = self._start_mode

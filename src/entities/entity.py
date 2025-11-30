@@ -1,6 +1,8 @@
 import pygame
 
-class Entity ():
+from abc import ABC as AbstractClass, abstractmethod
+
+class Entity (AbstractClass):
 
     def __init__(self, x, y, environment):
         
@@ -8,6 +10,18 @@ class Entity ():
         self._ENVIRONMENT = environment
 
     # MÉTODOS PÚBLICOS
+
+    @abstractmethod
+    def update(self, delta_time) -> None:
+        raise NotImplementedError("A subclasse deve implementar update")
+    
+    @abstractmethod
+    def draw(self, screen) -> None:
+        raise NotImplementedError("A subclasse deve implementar draw")
+    
+    @abstractmethod
+    def reset(self) -> None:
+        raise NotImplementedError("A subclasse deve implementar reset")
 
     @property
     def position(self):
