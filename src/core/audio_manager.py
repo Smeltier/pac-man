@@ -3,10 +3,10 @@ import pygame
 class AudioManager ():
 
     MUSIC_VOLUME = 0.2
-    WAKA_VOLUME = 0.4
+    WAKA_VOLUME = 0.4 
     
-    SIREN_CHASE_PATH = 'src/sounds/siren_background_sound.wav'
-    SIREN_VULNERABLE_PATH = 'src/sounds/power_up_sound.wav'
+    SIREN_CHASE_PATH = 'src/data/sounds/siren_background_sound.wav'
+    SIREN_VULNERABLE_PATH = 'src/data/sounds/power_up_sound.wav'
     WAKA_WAKA_PATH = 'src/sounds/waka_waka.wav'
 
     def __init__ (self):
