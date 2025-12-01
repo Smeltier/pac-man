@@ -1,0 +1,122 @@
+{
+    "environment": {
+        "durations_ms": {
+            "vulnerable": 7000,
+            "scatter": 7000,
+            "chase": 20000,
+            "game_over_screen": 4000
+        },
+        "initial_lives": 3
+    },
+
+    "pacman": {
+        "speed": 2,
+        "animation_speed_seconds": 0.04,
+        "collision_rect_size": 32,
+        "teleport": {
+            "min_x": 15,
+            "max_x": 885,
+            "wrap_x": {
+                "min": 880,
+                "max": 20
+            }
+        },
+        "points": {
+            "small_pellet": 10,
+            "power_pellet": 20,
+            "ghost_base": 100
+        }
+    },
+
+    "ghost": {
+        "speed": {
+            "normal": 2,
+            "eaten": 6
+        },
+        "positions": {
+            "scatter_target": [0, 0],
+            "house_exit": [12, 14],
+            "house_door": [13, 14],
+            "house_wait": [14, 14]
+        },
+        "teleport": {
+            "min_x": 15,
+            "max_x": 885,
+            "wrap_x": {
+                "min": 880,
+                "max": 20
+            }
+        },
+        "spawn_time": 3000
+    },
+
+    "blinky": {
+        "scatter_target": [2, 27]
+    },
+
+    "pinky": {
+        "scatter_target": [2, 2],
+        "initial_exit_delay": 500,
+        "chase_offset": 4
+    },
+    
+    "inky": {
+        "scatter_target": [30, 27],
+        "points_to_exit": 30,
+        "chase_offset": 2
+    },
+    
+    "clyde": {
+        "scatter_target": [30, 2],
+        "points_to_exit": 60,
+        "distance_threshold_squared": 64
+    },
+
+    "audio_manager": {
+        "constants": {
+            "music_volume": 0.2,
+            "waka_volume": 0.4
+        },
+        "paths": {
+            "siren_chase": "src/data/sounds/siren_background_sound.wav",
+            "siren_vulnerable": "src/data/sounds/power_up_sound.wav",
+            "waka_path": "src/data/sounds/waka_waka.wav"
+        }
+    },
+
+    "hud": {
+        "font_size": {
+            "text_font": 36,
+            "game_over": 72
+        },
+        "text_color": {
+            "score": "white",
+            "lives": "yellow",
+            "game_over": "red",
+            "victory": "green"
+        },
+        "padding": 10
+    },
+
+    "maze": {
+        "colors": {
+            "wall": "blue",
+            "door": "white",
+            "small_pellet": "white",
+            "power_pellet": "white"
+        },
+        "radius": {
+            "small_pellet": 2,
+            "power_pellet": 6
+        },
+        "codes": {
+            "vertical": 3,
+            "horizontal": 4,
+            "arc_tl": 5,
+            "arc_tr": 6,
+            "arc_br": 7,
+            "arc_bl": 8,
+            "door": 9
+        }
+    }
+}
