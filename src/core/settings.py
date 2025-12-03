@@ -33,7 +33,7 @@ class Settings ():
     @classmethod
     def set_config_path (cls, new_path: str) -> None:
         """ Altera o caminho padrão do arquivo de configuração antes do primeiro carregamento. """
-        if cls._data is None:
+        if not cls._data:
             cls._default_path = new_path
         else:
             print("[AVISO]: O caminho do arquivo de configuração não pode ser alterado após o carregamento inicial.")
