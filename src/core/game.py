@@ -10,5 +10,3 @@ class Game ():
         self.height: float = height
         self.fps: int      = fps
         self.running: bool = True
-
-    
