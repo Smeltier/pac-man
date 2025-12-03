@@ -9,8 +9,6 @@ class Entity (AbstractClass):
         self._position = pygame.Vector2((x, y))
         self._ENVIRONMENT = environment
 
-    # MÉTODOS PÚBLICOS
-
     @abstractmethod
     def update(self, delta_time) -> None:
         raise NotImplementedError("A subclasse deve implementar update")
@@ -30,3 +28,7 @@ class Entity (AbstractClass):
     @position.setter
     def position(self, new_position):
         self._position = new_position
+
+    @abstractmethod
+    def _initial_config (self) -> None:
+        raise NotImplementedError("A subclasse deve implementar _initial_config")

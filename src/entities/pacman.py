@@ -2,23 +2,14 @@ import pygame
 
 from src.entities.entity import Entity
 from src.core.states import GhostState, GameState 
+from src.core.settings import Settings
 
 class PacMan (Entity):
 
-    SPEED = 2
-    ANIMATION_SPEED_SECONDS = 0.04
-    COLLISION_RECT_SIZE = 32
-    TELEPORT_MIN_X = 15
-    TELEPORT_MAX_X = 885
-    TELEPORT_WRAP_X_MIN = 880
-    TELEPORT_WRAP_X_MAX = 20
-    
-    SMALL_PELLET_POINTS = 10
-    POWER_PELLET_POINTS = 20
-    GHOST_BASE_POINTS = 100
-
     def __init__ (self, x, y, environment) -> None:
         super().__init__(x, y, environment)
+
+        self._initial_config()
 
         self._start_position = pygame.Vector2(x, y)
         self._previous_orientation = 0
@@ -228,3 +219,23 @@ class PacMan (Entity):
                 
                 elif ghost._current_mode in [GhostState.CHASE, GhostState.SCATTER]:
                     self.handle_death()
+
+    def _initial_config (self) -> None:
+        config: dict = Settings.get("pacman")
+
+        self.SPEED = config.get("speed", 1)
+        self.ANIMATION_SPEED_SECONDS = config.get("animation_speed_seconds", 0.1)
+        self.COLLISION_RECT_SIZE = config.get("collision_rect_size", 1)
+
+        teleport = Settings.get("teleport")
+        
+        self.TELEPORT_MIN_X = teleport["min_x"]
+        self.TELEPORT_MAX_X = teleport["max_x"]
+        self.TELEPORT_WRAP_X_MIN = teleport["wrap_x_min"]
+        self.TELEPORT_WRAP_X_MAX = teleport["wrap_x_max"]
+
+        points_config = config.get("points", {})
+
+        self.SMALL_PELLET_POINTS = points_config.get("small_pellet", 1)
+        self.POWER_PELLET_POINTS = points_config.get("power_pellet", 1)
+        self.GHOST_BASE_POINTS = points_config.get("ghost_base", 1)

@@ -6,27 +6,17 @@ from abc import abstractmethod
 
 from src.entities.entity import Entity
 from src.core.states import GhostState, GameState 
+from src.core.settings import Settings
 
 class Ghost (Entity):
     
-    NORMAL_SPEED = 2
-    EATEN_SPEED = 6 
     OPPOSITE_ORIENTATION = {1: 2, 2: 1, 3: 4, 4: 3, 0: 0}
-    HOUSE_RESPAWN_TIME_MS = 3000 
-    
-    SCATTER_TARGET_TILE = (0, 0)
-    HOUSE_EXIT_POSITION = (12, 14)  
-    HOUSE_DOOR_POSITION = (13, 14) 
-    HOUSE_WAIT_POSITION = (14, 14) 
-    
-    TELEPORT_MIN_X = 15
-    TELEPORT_MAX_X = 885
-    TELEPORT_WRAP_X_MIN = 880
-    TELEPORT_WRAP_X_MAX = 20
 
     def __init__(self, x, y, environment, sprite_paths: dict[int, str]):
         super().__init__(x, y, environment)
         
+        self._initial_config()
+
         self._start_position = pygame.Vector2(x, y)
         self._current_speed = self.NORMAL_SPEED 
         self._current_orientation = 4 
@@ -365,3 +355,22 @@ class Ghost (Entity):
                 eaten_sprites[direction] = pygame.Surface((40, 40), pygame.SRCALPHA)
 
         return eaten_sprites
+    
+    def _initial_config (self) -> None:
+        config = Settings.get("ghost")
+        
+        self.NORMAL_SPEED = config["speed"]["normal"]
+        self.EATEN_SPEED = config["speed"]["eaten"]
+        self.HOUSE_RESPAWN_TIME_MS = config["spawn_time"]
+        
+        positions = config["positions"]
+        self.SCATTER_TARGET = tuple(positions["scatter_target"])
+        self.HOUSE_EXIT_POSITION = tuple(positions["house_exit"])
+        self.HOUSE_DOOR_POSITION = tuple(positions["house_door"])
+        self.HOUSE_WAIT_POSITION = tuple(positions["house_wait"])
+        
+        teleport = Settings.get("teleport")
+        self.TELEPORT_MIN_X = teleport["min_x"]
+        self.TELEPORT_MAX_X = teleport["max_x"]
+        self.TELEPORT_WRAP_X_MIN = teleport["wrap_x_min"]
+        self.TELEPORT_WRAP_X_MAX = teleport["wrap_x_max"]

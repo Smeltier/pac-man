@@ -2,10 +2,9 @@ import pygame
 
 from src.entities.ghost import Ghost
 from src.core.states import GhostState
+from src.core.settings import Settings
 
 class Blinky (Ghost):
-
-    BLINKY_SCATTER_TARGET = (2, 27)
 
     def __init__(self, x, y, environment):
         sprite_paths = {
@@ -16,6 +15,8 @@ class Blinky (Ghost):
         }
 
         super().__init__(x, y, environment, sprite_paths)
+
+        self._initial_config()
 
         self._start_mode = GhostState.SCATTER
         self.SCATTER_TARGET_TILE = self.BLINKY_SCATTER_TARGET
@@ -30,12 +31,13 @@ class Blinky (Ghost):
         if self._exit_timer_ms > 0:
             return pygame.time.get_ticks() >= self._exit_timer_ms
         return True
+    
+    def _initial_config (self) -> None:
+        super()._initial_config()
+        config = Settings.get("blinky")
+        self.BLINKY_SCATTER_TARGET = tuple(config.get("scatter_target"))
 
 class Pinky (Ghost):
-
-    PINKY_SCATTER_TARGET = (2, 2)
-    INITIAL_EXIT_DELAY_MS = 500
-    CHASE_OFFSET = 4
 
     def __init__(self, x, y, environment):
         sprite_paths = {
@@ -61,13 +63,16 @@ class Pinky (Ghost):
     
     def _should_exit_house(self, pacman, all_ghosts) -> bool:
         return pygame.time.get_ticks() >= self._exit_timer_ms
+    
+    def _initial_config (self) -> None:
+        super()._initial_config()
+        config = Settings.get("pinky")
+        self.PINKY_SCATTER_TARGET = tuple(config.get("scatter_target"))
+        self.INITIAL_EXIT_DELAY_MS = config.get("initial_exit_delay")
+        self.CHASE_OFFSET = config.get("chase_offset")
 
 class Inky (Ghost):
     
-    INKY_SCATTER_TARGET = (30, 27) 
-    POINTS_TO_EXIT = 30
-    CHASE_OFFSET = 2
-
     def __init__(self, x, y, environment):
         sprite_paths = {
             1: 'src/images/inky_up.png',    
@@ -100,13 +105,16 @@ class Inky (Ghost):
     
     def _should_exit_house(self, pacman, all_ghosts) -> bool:
         return pacman.total_points >= self._points_required_to_exit
+    
+    def _initial_config (self) -> None:
+        super()._initial_config()
+        config = Settings.get("inky")
+        self.INKY_SCATTER_TARGET = tuple(config.get("scatter_target"))
+        self.POINTS_TO_EXIT = config.get("points_to_exit")
+        self.CHASE_OFFSET = config.get("chase_offset")
 
 class Clyde (Ghost):
     
-    CLYDE_SCATTER_TARGET = (30, 2)
-    POINTS_TO_EXIT = 60
-    DISTANCE_THRESHOLD_SQUARED = 64
-
     def __init__(self, x, y, environment):
         sprite_paths = {
             1: 'src/images/clyde_up.png',    
@@ -132,3 +140,10 @@ class Clyde (Ghost):
 
     def _should_exit_house(self, pacman, all_ghosts) -> bool:
         return pacman.total_points >= self._points_required_to_exit
+    
+    def _initial_config (self) -> None:
+        super()._initial_config()
+        config = Settings.get("clyde")
+        self.CLYDE_SCATTER_TARGET = tuple(config.get("scatter_target"))
+        self.POINTS_TO_EXIT = config.get("points_to_exit")
+        self.DISTANCE_THRESHOLD_SQUARED = config.get("distance_threshold_squared")

@@ -5,7 +5,6 @@ from src.world.maze import Maze
 from src.core.states import GameState, GhostState
 from src.core.audio_manager import AudioManager
 
-# Trocar nome - Game
 class Environment ():
     
     VULNERABLE_DURATION_MS = 7000

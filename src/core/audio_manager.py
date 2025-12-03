@@ -1,5 +1,7 @@
 import pygame
 
+from src.core.settings import Settings
+
 class AudioManager ():
 
     MUSIC_VOLUME = 0.2
@@ -10,6 +12,8 @@ class AudioManager ():
     WAKA_WAKA_PATH = 'src/sounds/waka_waka.wav'
 
     def __init__ (self):
+
+        self._initial_config()
         
         self._siren_chase_path = self.SIREN_CHASE_PATH
         self._siren_vulnerable_path = self.SIREN_VULNERABLE_PATH
@@ -49,3 +53,17 @@ class AudioManager ():
             pygame.mixer.music.play(loops = -1)
         except pygame.error as e:
             print(f"Erro ao carregar música: {e}")
+
+    def _initial_config (self) -> None:
+        config = Settings.get("audio_manager")
+
+        constrants_config = config.get("constrants")
+
+        self.MUSIC_VOLUME = constrants_config.get("music_volume")
+        self.WAKA_VOLUME = constrants_config.get("waka_volume")
+
+        paths_config = config.get("paths")
+
+        self.SIREN_CHASE_PATH = paths_config.get("siren_chase")
+        self.SIREN_VULNERABLE_PATH = paths_config.get("siren_vulnerable")
+        self.WAKA_WAKA_PATH = paths_config.get("waka_path")

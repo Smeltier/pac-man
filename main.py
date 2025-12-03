@@ -18,7 +18,7 @@ CLOCK = pygame.time.Clock()
 
 environment = Environment(
     screen = SCREEN, 
-    maze_file = 'src/configs/maze.txt'
+    maze_file = 'src/data/settings/default_maze.txt'
 )
 
 cw = environment.cell_width
