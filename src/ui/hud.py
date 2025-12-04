@@ -1,16 +1,18 @@
 import pygame
 
+from src.data.class_config.hud_config import HUDConfig
+
 class HUD ():
 
-    TEXT_FONT_SIZE = 36
-    GAME_OVER_FONT_SIZE = 72
-    SCORE_COLOR = 'white'
-    LIVES_COLOR = 'yellow'
-    GAME_OVER_COLOR = 'red'
-    VICTORY_COLOR = 'green'
-    PADDING = 10
+    def __init__(self, screen, hud_config: HUDConfig):
 
-    def __init__(self, screen):
+        self.TEXT_FONT_SIZE = hud_config.TEXT_FONT_SIZE
+        self.GAME_OVER_FONT_SIZE = hud_config.GAME_OVER_FONT_SIZE
+        self.SCORE_COLOR = hud_config.SCORE_COLOR
+        self.LIVES_COLOR = hud_config.LIVES_COLOR
+        self.GAME_OVER_COLOR = hud_config.GAME_OVER_COLOR
+        self.VICTORY_COLOR = hud_config.VICTORY_COLOR
+        self.PADDING = hud_config.PADDING
         
         self._screen = screen
         self._screen_width = screen.get_width()
@@ -23,8 +25,6 @@ class HUD ():
             self._text_font = pygame.font.SysFont(pygame.font.get_default_font(), self.TEXT_FONT_SIZE)
             self._game_over_font = pygame.font.SysFont(pygame.font.get_default_font(), self.GAME_OVER_FONT_SIZE)
 
-    # MÉTODOS PÚBLICOS
-
     def draw_score(self, score, lives):
         self._draw_score_text(score)
         self._draw_lives_text(lives)
@@ -34,8 +34,6 @@ class HUD ():
 
     def draw_victory(self):
         self._draw_centered_message("YOU WIN!", self.VICTORY_COLOR)
-
-    # MÉTODOS PRIVADOS
 
     def _draw_score_text(self, score):
         text_surface = self._text_font.render(f"SCORE: {score}", True, self.SCORE_COLOR)
