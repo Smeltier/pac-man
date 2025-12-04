@@ -9,6 +9,7 @@ from src.data.class_config.blinky_config        import BlinkyConfig
 from src.data.class_config.clyde_config         import ClydeConfig
 from src.data.class_config.inky_config          import InkyConfig
 from src.data.class_config.pinky_config         import PinkyConfig
+from src.data.class_config.teleport_config      import TeleportConfig
 
 class ConfigContainer ():
 
@@ -17,6 +18,7 @@ class ConfigContainer ():
 
         self.audio_manager = AudioManagerConfig(settings)
         self.environment   = EnvironmentConfig(settings)
+        self.teleport = TeleportConfig(settings)
         self.pacman        = PacmanConfig(settings)
         self.blinky        = BlinkyConfig(settings)
         self.ghost         = GhostConfig(settings)
