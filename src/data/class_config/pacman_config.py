@@ -3,7 +3,7 @@ from src.core.settings import Settings
 class PacmanConfig:
 
     def __init__ (self, settings) -> None:
-        config: dict = Settings.get("pacman")
+        config: dict = settings.get("pacman", {})
 
         self.SPEED = config.get("speed", 1)
         self.ANIMATION_SPEED_SECONDS = config.get("animation_speed_seconds", 0.1)

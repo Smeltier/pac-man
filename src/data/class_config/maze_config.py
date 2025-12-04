@@ -3,7 +3,7 @@ from src.core.settings import Settings
 class MazeConfig ():
 
     def __init__ (self, settings: Settings) -> None:
-        config = Settings.get("maze", {})
+        config = settings.get("maze", {})
         colors_config = config.get("colors", {})
         radius_config = config.get("radius", {})
         codes_config  = config.get("codes", {})

@@ -3,7 +3,7 @@ from src.core.settings import Settings
 class HUDConfig ():
 
     def __init__ (self, settings: Settings) -> None:
-        config = Settings.get("hud", {})
+        config = settings.get("hud", {})
         font_size_config = config.get("font_size", {})
         text_color_config = config.get("text_color", {})
 
