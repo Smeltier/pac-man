@@ -11,7 +11,7 @@ class AudioManager ():
     SIREN_VULNERABLE_PATH = 'src/data/sounds/power_up_sound.wav'
     WAKA_WAKA_PATH = 'src/sounds/waka_waka.wav'
 
-    def __init__ (self):
+    def __init__ (self) -> None:
 
         self._initial_config()
         
@@ -27,43 +27,25 @@ class AudioManager ():
 
         pygame.mixer.music.set_volume(self.MUSIC_VOLUME)
 
-    # MÉTODOS PÚBLICOS
-
-    def play_chase (self):
+    def play_chase (self) -> None:
         self._play_music(self._siren_chase_path)
 
-    def play_vulnerable (self):
+    def play_vulnerable (self) -> None:
         self._play_music(self._siren_vulnerable_path)
 
-    def play_waka(self):
+    def play_waka(self) -> None:
         if not self._eat_sound: return 
         
         if self._eat_sound.get_num_channels() == 0:
             self._eat_sound.play(loops=-1)
     
-    def stop_waka(self):
+    def stop_waka (self) -> None:
         if self._eat_sound:
             self._eat_sound.stop()
 
-    # MÉTODOS PRIVADOS
-
-    def _play_music(self, path):
+    def _play_music (self, path) -> None:
         try:
             pygame.mixer.music.load(path)
             pygame.mixer.music.play(loops = -1)
         except pygame.error as e:
             print(f"Erro ao carregar música: {e}")
-
-    def _initial_config (self) -> None:
-        config = Settings.get("audio_manager")
-
-        constrants_config = config.get("constrants")
-
-        self.MUSIC_VOLUME = constrants_config.get("music_volume")
-        self.WAKA_VOLUME = constrants_config.get("waka_volume")
-
-        paths_config = config.get("paths")
-
-        self.SIREN_CHASE_PATH = paths_config.get("siren_chase")
-        self.SIREN_VULNERABLE_PATH = paths_config.get("siren_vulnerable")
-        self.WAKA_WAKA_PATH = paths_config.get("waka_path")
