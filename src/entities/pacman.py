@@ -2,37 +2,35 @@ import pygame
 
 from src.entities.entity import Entity
 from src.core.states import GhostState, GameState 
-from src.data.pacman_config import PacmanConfig
-from src.data.teleport_config import TeleportConfig
+from src.data.class_config.pacman_config import PacmanConfig
+from src.data.class_config.teleport_config import TeleportConfig
 
 class PacMan (Entity):
 
     def __init__ (self, x, y, environment, pacman_config: PacmanConfig, teleport_config: TeleportConfig) -> None:
         super().__init__(x, y, environment)
 
-        self.SPEED = pacman_config.SPEED
+        self.SPEED                   = pacman_config.SPEED
         self.ANIMATION_SPEED_SECONDS = pacman_config.ANIMATION_SPEED_SECONDS
-        self.COLLISION_RECT_SIZE = pacman_config.COLLISION_RECT_SIZE
-        self.SMALL_PELLET_POINTS = pacman_config.SMALL_PELLET_POINTS
-        self.POWER_PELLET_POINTS = pacman_config.POWER_PELLET_POINTS
-        self.GHOST_BASE_POINTS = pacman_config.GHOST_BASE_POINTS
+        self.COLLISION_RECT_SIZE     = pacman_config.COLLISION_RECT_SIZE
+        self.SMALL_PELLET_POINTS     = pacman_config.SMALL_PELLET_POINTS
+        self.POWER_PELLET_POINTS     = pacman_config.POWER_PELLET_POINTS
+        self.GHOST_BASE_POINTS       = pacman_config.GHOST_BASE_POINTS
 
-        self.TELEPORT_MIN_X = teleport_config.TELEPORT_MIN_X
-        self.TELEPORT_MAX_X = teleport_config.TELEPORT_MAX_X
+        self.TELEPORT_MIN_X      = teleport_config.TELEPORT_MIN_X
+        self.TELEPORT_MAX_X      = teleport_config.TELEPORT_MAX_X
         self.TELEPORT_WRAP_X_MIN = teleport_config.TELEPORT_WRAP_X_MIN
         self.TELEPORT_WRAP_X_MAX = teleport_config.TELEPORT_WRAP_X_MAX
 
-        self._start_position = pygame.Vector2(x, y)
-        self._previous_orientation = 0
-        self._current_orientation  = 0
-        self._next_orientation     = 0
-        self._animation_timer_s    = 0.0
+        self._start_position        = pygame.Vector2(x, y)
+        self._previous_orientation  = 0
+        self._current_orientation   = 0
+        self._next_orientation      = 0
+        self._animation_timer_s     = 0.0
         self._animation_frame_index = 0
         self._total_points          = 0
-        self._ghosts_eaten_streak  = 0 
-        self._sprites              = self._load_sprites()
-
-    # MÉTODOS PÚBLICOS
+        self._ghosts_eaten_streak   = 0 
+        self._sprites               = self._load_sprites()
 
     def update (self, delta_time) -> None:
         if self._ENVIRONMENT.game_state != GameState.GAME_OVER:
@@ -75,8 +73,6 @@ class PacMan (Entity):
     def total_points(self):
         return self._total_points
     
-    # MÉTODOS PRIVADOS
-
     def _can_move (self, direction) -> bool:
         row, col = self._get_grid_coordinates()
 
