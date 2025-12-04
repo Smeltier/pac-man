@@ -1,21 +1,26 @@
-import pygame
 import random
-import math
+import pygame
 
 from abc import abstractmethod
 
-from src.entities.entity import Entity
-from src.core.states import GhostState, GameState 
-from src.core.settings import Settings
+from src.core.states                    import GhostState, GameState 
+from src.entities.entity                import Entity
+from src.data.class_config.ghost_config import GhostConfig
 
 class Ghost (Entity):
     
     OPPOSITE_ORIENTATION = {1: 2, 2: 1, 3: 4, 4: 3, 0: 0}
 
-    def __init__(self, x, y, environment, sprite_paths: dict[int, str]):
+    def __init__(self, x, y, environment, sprite_paths: dict[int, str], ghost_config: GhostConfig):
         super().__init__(x, y, environment)
-        
-        self._initial_config()
+
+        self.NORMAL_SPEED = ghost_config.NORMAL_SPEED
+        self.EATEN_SPEED = ghost_config.EATEN_SPEED
+        self.HOUSE_RESPAWN_TIME_MS = ghost_config.HOUSE_RESPAWN_TIME_MS
+        self.SCATTER_TARGET = ghost_config.SCATTER_TARGET
+        self.HOUSE_EXIT_POSITION = ghost_config.HOUSE_EXIT_POSITION
+        self.HOUSE_DOOR_POSITION = ghost_config.HOUSE_DOOR_POSITION
+        self.HOUSE_WAIT_POSITION = ghost_config.HOUSE_WAIT_POSITION
 
         self._start_position = pygame.Vector2(x, y)
         self._current_speed = self.NORMAL_SPEED 
@@ -36,8 +41,6 @@ class Ghost (Entity):
         self._vulnerable_animation_timer_ms = 0.0
         self._vulnerable_animation_frame_index = 0
         self._vulnerable_animation_speed_ms = 0.15 
-
-    # MÉTODOS PÚBLICOS
 
     def update(self, delta_time):
         if self._ENVIRONMENT.game_state == GameState.GAME_OVER: 
@@ -94,8 +97,6 @@ class Ghost (Entity):
 
     def get_ghost(self, all_ghosts, ghost_class):
         return next((ghost for ghost in all_ghosts if isinstance(ghost, ghost_class)), None)
-
-    # MÉTODOS PRIVADOS
 
     @abstractmethod
     def _compute_target_tile(self, pacman, all_ghosts) -> tuple:
@@ -355,22 +356,3 @@ class Ghost (Entity):
                 eaten_sprites[direction] = pygame.Surface((40, 40), pygame.SRCALPHA)
 
         return eaten_sprites
-    
-    def _initial_config (self) -> None:
-        config = Settings.get("ghost")
-        
-        self.NORMAL_SPEED = config["speed"]["normal"]
-        self.EATEN_SPEED = config["speed"]["eaten"]
-        self.HOUSE_RESPAWN_TIME_MS = config["spawn_time"]
-        
-        positions = config["positions"]
-        self.SCATTER_TARGET = tuple(positions["scatter_target"])
-        self.HOUSE_EXIT_POSITION = tuple(positions["house_exit"])
-        self.HOUSE_DOOR_POSITION = tuple(positions["house_door"])
-        self.HOUSE_WAIT_POSITION = tuple(positions["house_wait"])
-        
-        teleport = Settings.get("teleport")
-        self.TELEPORT_MIN_X = teleport["min_x"]
-        self.TELEPORT_MAX_X = teleport["max_x"]
-        self.TELEPORT_WRAP_X_MIN = teleport["wrap_x_min"]
-        self.TELEPORT_WRAP_X_MAX = teleport["wrap_x_max"]
