@@ -1,22 +1,26 @@
 import pygame
 
-from src.ui.hud import HUD
-from src.world.maze import Maze
-from src.core.states import GameState, GhostState
+from src.data.class_config.audio_manager_config import AudioManagerConfig   
+from src.data.class_config.environment_config import EnvironmentConfig
+from src.data.class_config.hud_config import HUDConfig
+from src.data.class_config.maze_config import MazeConfig
+from src.core.states import GameState
+from src.core.states import GhostState
 from src.core.audio_manager import AudioManager
+from src.world.maze import Maze
+from src.ui.hud import HUD
 
 class Environment ():
-    
-    VULNERABLE_DURATION_MS = 7000
-    CHASE_DURATION_MS = 20000
-    SCATTER_DURATION_MS = 7000
-    GAME_OVER_SCREEN_DURATION_MS = 4000 
-    INITIAL_LIVES = 3
 
-    def __init__ (self, screen, maze_file: str):
-        
+    def __init__ (self, screen, maze_file: str, environment_config: EnvironmentConfig, hud_config: HUDConfig, audio_manager_config: AudioManagerConfig, maze_config: MazeConfig):
+
+        self.VULNERABLE_DURATION_MS = environment_config.VULNERABLE_DURATION_MS
+        self.CHASE_DURATION_MS = environment_config.CHASE_DURATION_MS
+        self.SCATTER_DURATION_MS = environment_config.SCATTER_DURATION_MS
+        self.GAME_OVER_SCREEN_DURATION_MS = environment_config.GAME_OVER_SCREEN_DURATION_MS
+        self.INITIAL_LIVES = environment_config.INITIAL_LIVES
+
         self._screen = screen
-
         self._game_state = GameState.CHASE
         self._entities = []
         self._lives_remaining = self.INITIAL_LIVES
@@ -29,9 +33,9 @@ class Environment ():
         cell_width  = screen.get_width() // 30
         cell_height = screen.get_height() // 32
 
-        self._maze = Maze(maze_file, cell_width, cell_height)
-        self._hud  = HUD(screen)
-        self._audio_manager = AudioManager()
+        self._maze = Maze(maze_file, cell_width, cell_height, maze_config)
+        self._hud  = HUD(screen, hud_config)
+        self._audio_manager = AudioManager(audio_manager_config)
 
         self._maze_matrix = self._maze.matrix
         self._cell_width = self._maze.cell_width
@@ -39,8 +43,6 @@ class Environment ():
 
         self._audio_manager.play_chase()
 
-    # MÉTODOS PÚBLICOS
-    
     def update(self, delta_time: float) -> None:
         if self._game_state in [GameState.GAME_OVER, GameState.VICTORY]:
             self._handle_end_game_timer()
@@ -149,8 +151,6 @@ class Environment ():
     @property
     def maze(self):
         return self._maze
-
-    # MÉTODOS PRIVADOS 
 
     def _reset_level(self):
         pygame.time.delay(1000) 

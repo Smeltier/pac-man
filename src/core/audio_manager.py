@@ -1,19 +1,16 @@
 import pygame
 
-from src.core.settings import Settings
+from src.data.class_config.audio_manager_config import AudioManagerConfig
 
 class AudioManager ():
 
-    MUSIC_VOLUME = 0.2
-    WAKA_VOLUME = 0.4 
-    
-    SIREN_CHASE_PATH = 'src/data/sounds/siren_background_sound.wav'
-    SIREN_VULNERABLE_PATH = 'src/data/sounds/power_up_sound.wav'
-    WAKA_WAKA_PATH = 'src/sounds/waka_waka.wav'
+    def __init__ (self, audio_manager_config: AudioManagerConfig) -> None:
 
-    def __init__ (self) -> None:
-
-        self._initial_config()
+        self.MUSIC_VOLUME = audio_manager_config.MUSIC_VOLUME
+        self.WAKA_VOLUME = audio_manager_config.WAKA_VOLUME
+        self.SIREN_CHASE_PATH = audio_manager_config.SIREN_CHASE_PATH
+        self.SIREN_VULNERABLE_PATH = audio_manager_config.SIREN_VULNERABLE_PATH
+        self.WAKA_WAKA_PATH = audio_manager_config.WAKA_WAKA_PATH
         
         self._siren_chase_path = self.SIREN_CHASE_PATH
         self._siren_vulnerable_path = self.SIREN_VULNERABLE_PATH
