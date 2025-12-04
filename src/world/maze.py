@@ -1,23 +1,25 @@
 import math
 import pygame
 
-class Maze ():
+from src.data.class_config.maze_config import MazeConfig
 
-    WALL_COLOR = 'cyan'
-    DOOR_COLOR = 'white'
-    SMALL_PELLET_COLOR = 'white'
-    POWER_PELLET_COLOR = 'white'
-    SMALL_PELLET_RADIUS = 2
-    POWER_PELLET_RADIUS = 6
-    WALL_CODE_VERTICAL = 3
-    WALL_CODE_HORIZONTAL = 4
-    WALL_CODE_ARC_TL = 5
-    WALL_CODE_ARC_TR = 6
-    WALL_CODE_ARC_BR = 7
-    WALL_CODE_ARC_BL = 8
-    WALL_CODE_DOOR = 9
+class Maze (): 
 
-    def __init__ (self, maze_file: str, cell_width: int, cell_height: int):
+    def __init__ (self, maze_file: str, cell_width: int, cell_height: int, maze_config: MazeConfig):
+
+        self.WALL_COLOR = maze_config.WALL_COLOR
+        self.DOOR_COLOR = maze_config.DOOR_COLOR
+        self.SMALL_PELLET_COLOR = maze_config.SMALL_PELLET_COLOR
+        self.POWER_PELLET_COLOR = maze_config.POWER_PELLET_COLOR
+        self.SMALL_PELLET_RADIUS = maze_config.SMALL_PELLET_RADIUS
+        self.POWER_PELLET_RADIUS = maze_config.POWER_PELLET_RADIUS
+        self.WALL_CODE_VERTICAL = maze_config.WALL_CODE_VERTICAL
+        self.WALL_CODE_HORIZONTAL = maze_config.WALL_CODE_HORIZONTAL
+        self.WALL_CODE_ARC_TL = maze_config.WALL_CODE_ARC_TL
+        self.WALL_CODE_ARC_TR = maze_config.WALL_CODE_ARC_TR
+        self.WALL_CODE_ARC_BR = maze_config.WALL_CODE_ARC_BR
+        self.WALL_CODE_ARC_BL = maze_config.WALL_CODE_ARC_BL
+        self.WALL_CODE_DOOR = maze_config.WALL_CODE_DOOR
         
         self._cell_width  = cell_width
         self._cell_height = cell_height
