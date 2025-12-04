@@ -1,8 +1,8 @@
 import pygame
 
-from src.entities.entity import Entity
-from src.core.states import GhostState, GameState 
-from src.data.class_config.pacman_config import PacmanConfig
+from src.entities.entity                   import Entity
+from src.core.states                       import GhostState, GameState 
+from src.data.class_config.pacman_config   import PacmanConfig
 from src.data.class_config.teleport_config import TeleportConfig
 
 class PacMan (Entity):
