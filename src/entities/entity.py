@@ -3,9 +3,8 @@ import pygame
 from abc import ABC as AbstractClass, abstractmethod
 
 class Entity (AbstractClass):
-
+    
     def __init__(self, x, y, environment):
-        
         self._position = pygame.Vector2((x, y))
         self._ENVIRONMENT = environment
 
@@ -28,7 +27,3 @@ class Entity (AbstractClass):
     @position.setter
     def position(self, new_position):
         self._position = new_position
-
-    @abstractmethod
-    def _initial_config (self) -> None:
-        raise NotImplementedError("A subclasse deve implementar _initial_config")
