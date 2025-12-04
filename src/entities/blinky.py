@@ -3,18 +3,20 @@ import pygame
 from src.entities.ghost import Ghost
 from src.core.states import GhostState
 from src.data.class_config.blinky_config import BlinkyConfig
+from src.data.class_config.ghost_config import GhostConfig
+from src.data.class_config.teleport_config import TeleportConfig
 
 class Blinky (Ghost):
 
-    def __init__(self, x, y, environment, blinky_config: BlinkyConfig):
+    def __init__(self, x, y, environment, ghost_config: GhostConfig, blinky_config: BlinkyConfig, teleport_config: TeleportConfig):
         sprite_paths = {
-            1: 'src/images/blinky_up.png',    
-            2: 'src/images/blinky_down.png',  
-            3: 'src/images/blinky_left.png',  
-            4: 'src/images/blinky_right.png', 
+            1: 'src/data/images/blinky_up.png',    
+            2: 'src/data/images/blinky_down.png',  
+            3: 'src/data/images/blinky_left.png',  
+            4: 'src/data/images/blinky_right.png', 
         }
 
-        super().__init__(x, y, environment, sprite_paths)
+        super().__init__(x, y, environment, sprite_paths, ghost_config, teleport_config)
 
         self.BLINKY_SCATTER_TARGET = blinky_config.BLINKY_SCATTER_TARGET
 

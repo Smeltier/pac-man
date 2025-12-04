@@ -2,18 +2,20 @@ import pygame
 
 from src.entities.ghost import Ghost
 from src.data.class_config.pinky_config import PinkyConfig
+from src.data.class_config.ghost_config import GhostConfig
+from src.data.class_config.teleport_config import TeleportConfig
 
 class Pinky (Ghost):
 
-    def __init__(self, x, y, environment, pinky_config: PinkyConfig):
+    def __init__(self, x, y, environment, ghost_config: GhostConfig, pinky_config: PinkyConfig, teleport_config: TeleportConfig):
         sprite_paths = {
-            1: 'src/images/pinky_up.png',    
-            2: 'src/images/pinky_down.png',  
-            3: 'src/images/pinky_left.png',  
-            4: 'src/images/pinky_right.png', 
+            1: 'src/data/images/pinky_up.png',    
+            2: 'src/data/images/pinky_down.png',  
+            3: 'src/data/images/pinky_left.png',  
+            4: 'src/data/images/pinky_right.png', 
         }
 
-        super().__init__(x, y, environment, sprite_paths)
+        super().__init__(x, y, environment, sprite_paths, ghost_config, teleport_config)
 
         self.PINKY_SCATTER_TARGET  = pinky_config.PINKY_SCATTER_TARGET
         self.INITIAL_EXIT_DELAY_MS = pinky_config.INITIAL_EXIT_DELAY_MS

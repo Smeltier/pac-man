@@ -3,15 +3,16 @@ import pygame
 
 from abc import abstractmethod
 
-from src.core.states                    import GhostState, GameState 
-from src.entities.entity                import Entity
-from src.data.class_config.ghost_config import GhostConfig
+from src.core.states                       import GhostState, GameState 
+from src.entities.entity                   import Entity
+from src.data.class_config.ghost_config    import GhostConfig
+from src.data.class_config.teleport_config import TeleportConfig
 
 class Ghost (Entity):
     
     OPPOSITE_ORIENTATION = {1: 2, 2: 1, 3: 4, 4: 3, 0: 0}
 
-    def __init__(self, x, y, environment, sprite_paths: dict[int, str], ghost_config: GhostConfig):
+    def __init__(self, x, y, environment, sprite_paths: dict[int, str], ghost_config: GhostConfig, teleport_config: TeleportConfig):
         super().__init__(x, y, environment)
 
         self.NORMAL_SPEED = ghost_config.NORMAL_SPEED
@@ -21,6 +22,11 @@ class Ghost (Entity):
         self.HOUSE_EXIT_POSITION = ghost_config.HOUSE_EXIT_POSITION
         self.HOUSE_DOOR_POSITION = ghost_config.HOUSE_DOOR_POSITION
         self.HOUSE_WAIT_POSITION = ghost_config.HOUSE_WAIT_POSITION
+
+        self.TELEPORT_MIN_X      = teleport_config.TELEPORT_MIN_X
+        self.TELEPORT_MAX_X      = teleport_config.TELEPORT_MAX_X
+        self.TELEPORT_WRAP_X_MIN = teleport_config.TELEPORT_WRAP_X_MIN
+        self.TELEPORT_WRAP_X_MAX = teleport_config.TELEPORT_WRAP_X_MAX
 
         self._start_position = pygame.Vector2(x, y)
         self._current_speed = self.NORMAL_SPEED 
@@ -327,8 +333,8 @@ class Ghost (Entity):
         vulnerable_sprites = []
 
         try:
-            sprite_blue = pygame.image.load('src/images/vulnerable_sprite.png')
-            sprite_white = pygame.image.load('src/images/vulnerable_sprite_white.png')
+            sprite_blue = pygame.image.load('src/data/images/vulnerable_sprite.png')
+            sprite_white = pygame.image.load('src/data/images/vulnerable_sprite_white.png')
             vulnerable_sprites.append(pygame.transform.scale(sprite_blue, (40, 40)))
             vulnerable_sprites.append(pygame.transform.scale(sprite_white, (40, 40)))
 
@@ -341,10 +347,10 @@ class Ghost (Entity):
     def _load_eaten_sprites(self) -> dict[int, pygame.Surface]:
         eaten_sprites = {}
         eaten_paths = {
-            1: 'src/images/eyes_up.png',    
-            2: 'src/images/eyes_down.png',  
-            3: 'src/images/eyes_left.png',  
-            4: 'src/images/eyes_right.png', 
+            1: 'src/data/images/eyes_up.png',    
+            2: 'src/data/images/eyes_down.png',  
+            3: 'src/data/images/eyes_left.png',  
+            4: 'src/data/images/eyes_right.png', 
         }
 
         for direction, path in eaten_paths.items():

@@ -1,18 +1,20 @@
 from src.entities.ghost import Ghost
 from src.entities.blinky import Blinky
 from src.data.class_config.inky_config import InkyConfig
+from src.data.class_config.ghost_config import GhostConfig
+from src.data.class_config.teleport_config import TeleportConfig
 
 class Inky (Ghost):
     
-    def __init__(self, x, y, environment, inky_config: InkyConfig):
+    def __init__(self, x, y, environment, ghost_config: GhostConfig, inky_config: InkyConfig, teleport_config: TeleportConfig):
         sprite_paths = {
-            1: 'src/images/inky_up.png',    
-            2: 'src/images/inky_down.png',  
-            3: 'src/images/inky_left.png',  
-            4: 'src/images/inky_right.png', 
+            1: 'src/data/images/inky_up.png',    
+            2: 'src/data/images/inky_down.png',  
+            3: 'src/data/images/inky_left.png',  
+            4: 'src/data/images/inky_right.png', 
         }
 
-        super().__init__(x, y, environment, sprite_paths)
+        super().__init__(x, y, environment, sprite_paths, ghost_config, teleport_config)
 
         self.CHASE_OFFSET        = inky_config.CHASE_OFFSET
         self.INKY_SCATTER_TARGET = inky_config.INKY_SCATTER_TARGET

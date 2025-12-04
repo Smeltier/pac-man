@@ -138,7 +138,7 @@ class PacMan (Entity):
         sprites = []
         for count in range(0, 3):
             try:
-                image  = pygame.image.load(f'src/images/pacman_eat_{count}.png')
+                image  = pygame.image.load(f'src/data/images/pacman_eat_{count}.png')
                 sprite = pygame.transform.scale(image, (40, 40))
                 sprites.append(sprite)
 
@@ -186,7 +186,7 @@ class PacMan (Entity):
                 self._ghosts_eaten_streak = 0 
 
             self._ENVIRONMENT.matrix[row][col] = 0
-            self._ENVIRONMENT.maze.total_tablets -= 1
+            self._ENVIRONMENT.maze._total_tablets -= 1
 
             if self._ENVIRONMENT.maze.total_tablets <= 0:
                 self._ENVIRONMENT.handle_victory()
