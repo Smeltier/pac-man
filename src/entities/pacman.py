@@ -2,14 +2,25 @@ import pygame
 
 from src.entities.entity import Entity
 from src.core.states import GhostState, GameState 
-from src.core.settings import Settings
+from src.data.pacman_config import PacmanConfig
+from src.data.teleport_config import TeleportConfig
 
 class PacMan (Entity):
 
-    def __init__ (self, x, y, environment) -> None:
+    def __init__ (self, x, y, environment, pacman_config: PacmanConfig, teleport_config: TeleportConfig) -> None:
         super().__init__(x, y, environment)
 
-        self._initial_config()
+        self.SPEED = pacman_config.SPEED
+        self.ANIMATION_SPEED_SECONDS = pacman_config.ANIMATION_SPEED_SECONDS
+        self.COLLISION_RECT_SIZE = pacman_config.COLLISION_RECT_SIZE
+        self.SMALL_PELLET_POINTS = pacman_config.SMALL_PELLET_POINTS
+        self.POWER_PELLET_POINTS = pacman_config.POWER_PELLET_POINTS
+        self.GHOST_BASE_POINTS = pacman_config.GHOST_BASE_POINTS
+
+        self.TELEPORT_MIN_X = teleport_config.TELEPORT_MIN_X
+        self.TELEPORT_MAX_X = teleport_config.TELEPORT_MAX_X
+        self.TELEPORT_WRAP_X_MIN = teleport_config.TELEPORT_WRAP_X_MIN
+        self.TELEPORT_WRAP_X_MAX = teleport_config.TELEPORT_WRAP_X_MAX
 
         self._start_position = pygame.Vector2(x, y)
         self._previous_orientation = 0
@@ -23,14 +34,14 @@ class PacMan (Entity):
 
     # MÉTODOS PÚBLICOS
 
-    def update(self, delta_time) -> None:
+    def update (self, delta_time) -> None:
         if self._ENVIRONMENT.game_state != GameState.GAME_OVER:
             self._update_orientation(pygame.key.get_pressed())
             self._handle_movement()
             self._update_sprite(delta_time)
             self._check_collisions()
 
-    def draw(self, screen) -> None:
+    def draw (self, screen) -> None:
         x, y = int(self.position.x), int(self.position.y)
         sprite = self._sprites[self._animation_frame_index]
         angle = 0
@@ -219,23 +230,3 @@ class PacMan (Entity):
                 
                 elif ghost._current_mode in [GhostState.CHASE, GhostState.SCATTER]:
                     self.handle_death()
-
-    def _initial_config (self) -> None:
-        config: dict = Settings.get("pacman")
-
-        self.SPEED = config.get("speed", 1)
-        self.ANIMATION_SPEED_SECONDS = config.get("animation_speed_seconds", 0.1)
-        self.COLLISION_RECT_SIZE = config.get("collision_rect_size", 1)
-
-        teleport = Settings.get("teleport")
-        
-        self.TELEPORT_MIN_X = teleport["min_x"]
-        self.TELEPORT_MAX_X = teleport["max_x"]
-        self.TELEPORT_WRAP_X_MIN = teleport["wrap_x_min"]
-        self.TELEPORT_WRAP_X_MAX = teleport["wrap_x_max"]
-
-        points_config = config.get("points", {})
-
-        self.SMALL_PELLET_POINTS = points_config.get("small_pellet", 1)
-        self.POWER_PELLET_POINTS = points_config.get("power_pellet", 1)
-        self.GHOST_BASE_POINTS = points_config.get("ghost_base", 1)
