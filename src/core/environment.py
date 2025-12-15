@@ -83,11 +83,15 @@ class Environment ():
     def remove_entity (self, entity) -> None:
         self._entities = [e for e in self._entities if e is not entity]
 
-    def set_vulnerable (self) -> None:
-        if self._game_state == GameState.CHASE:
+    def set_vulnerable(self) -> None:
+        if self._game_state in (GameState.GAME_OVER, GameState.VICTORY):
+            return
+
+        if self._game_state != GameState.VULNERABLE:
             self._game_state = GameState.VULNERABLE
             self._audio_manager.play_vulnerable()
-            self._vulnerable_timer_ms = pygame.time.get_ticks()
+
+        self._vulnerable_timer_ms = pygame.time.get_ticks()
     
     def set_chase (self) -> None:
         self._game_state = GameState.CHASE
