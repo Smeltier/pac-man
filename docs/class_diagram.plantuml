@@ -1,0 +1,122 @@
+@startuml diagrama_de_classes
+
+skinparam linetype ortho
+left to right direction
+skinparam classArrowColor black
+skinparam nodesep 80
+skinparam ranksep 80
+skinparam ClassDiagram {
+    ArrowThickness 1
+    ArrowColor black
+    HorizontalSpacing 60
+    VerticalSpacing 60
+    ArrowFontSize 11
+    ArrowFontColor black
+    ArrowFontStyle plain
+}
+
+abstract class Entity {
+    - position: Vector2D
+    - environment: Environment
+
+    + Entity (x: float, y: float, environment: Environment)
+    + get_position () : Vector2D
+    + set_position (new_position: Vector2D) : None
+    {abstract} + update (delta_time: float) : None
+    {abstract} + draw (screen: Screen) : None
+    {abstract} + reset () : None
+}
+
+class PacMan extends Entity {
+    - start_position: Vector2D
+    - previous_orientation: int
+    - current_orientation: int
+    - next_orientation: int
+    - animation_timer_s: float
+    - animation_frame_index: int
+    - total_points: int
+    - ghosts_eaten_streak: int
+    - sprites: Surfaces
+    - pacman_config: PacManConfig
+    - teleport_config: TeleportConfig
+
+    + PacMan (x: float, y: float, environment: Environment, pacman_config: PacManConfig, teleport_config: TeleportConfig)
+    + handle_death () : None
+    + get_collision_rectangle (): Rect
+    + get_total_points () : int
+    - can_move (direction: int) : bool
+    - check_matrix_limits (row: int, col: int) : bool
+    - get_grid_coordinates () : tuple
+    - handle_movement () : None
+    - handle_teleport () : None
+    - align_to_grid_center () : bool
+    - load_sprites () : Surfaces
+    - play_eat_sound () : None
+    - update_orientation (keys: Keys) : None
+    - update_score_and_map () : None
+    - update_sprite (delta_time: int) : None
+    - process_pellet_interaction () : None
+    - check_collisions () : None
+}
+
+abstract class Ghost extends Entity {
+    - start_position: Vector2D
+    - current_speed: int
+    - current_orientation: int
+    - start_mode: GhostState
+    - current_mode: GhostState
+    - previous_mode: GhostState
+    - last_game_state: GameState
+    - is_immune: bool
+    - exit_timer_ms: int
+    - vulnerable_animation_timer_ms: float
+    - vulnerable_animation_speed_ms: float
+    - vulnerable_animation_frame_index: int
+    - directional_sprites: dict[int, Surface]
+    - vulnerable_sprites: list[Surface]
+    - eaten_sprites: list[Surface]
+    - ghost_config: GhostConfig
+    - teleport_config: TeleportConfig
+
+    + Ghost (x: float, y: float, environment: Environment, ghost_config: GhostConfig, teleport_config: TeleportConfig)
+    + set_eaten () : None
+    + get_collision_rectangle () : Rect
+    + get_ghost (all_ghosts: Ghosts, ghost_class: Class) : Ghost
+    - synchronize_immunity_with_game_state () : None
+    - update_ghost_behavior_state (pacman: PacMan, all_ghosts: Ghosts) : None
+    - handle_direction_reversal_on_state_change () : None
+    - process_movement_physics (pacman: PacMan, all_ghosts: Ghosts) : None
+    - calculate_best_direction (pacman: PacMan, all_ghosts: Ghosts) : int
+    - apply_velocity () : None
+    - align_to_grid_center () : bool
+    - is_move_valid (direction: int) : bool
+    - is_intersection () : bool
+    - get_grid_coordinates () : tuple
+    - release_ghost_from_house () : None
+    - enter_house_to_respawn () : None
+    - update_animation_frames (delta_time: float) : None
+    - handle_teleport () : None
+    - load_directional_sprites (paths: dict[int, str]) : dict[int, Surface]
+    - load_vulnerable_sprites () : list[Surface]
+    - load_eaten_sprites () : dict[int, Surface]
+    {abstract} - compute_target_tile (pacman: PacMan, all_ghosts: Ghosts) : tuple
+    {abstract} - should_exit_house (pacman: PacMan, all_ghosts: Ghosts) : bool
+}
+
+class Pinky extends Ghost {
+    + Pinky (x: float, y: float, environment: Environment, ghost_config: GhostConfig, pinky_config: PinkyConfig, teleport_config: TeleportConfig)
+}
+
+class Blinky extends Ghost {
+    + Blinky (x: float, y: float, environment: Environment, ghost_config: GhostConfig, blinky_config: BlinkyConfig, teleport_config: TeleportConfig)
+}
+
+class Clyde extends Ghost {
+    + Clyde (x: float, y: float, environment: Environment, ghost_config: GhostConfig, clyde_config: ClydeConfig, teleport_config: TeleportConfig)
+}
+
+class Inky extends Ghost {
+    + Inky (x: float, y: float, environment: Environment, ghost_config: GhostConfig, inky_config: InkyConfig, teleport_config: TeleportConfig)
+}
+
+@enduml

@@ -1,8 +1,5 @@
 from src.entities.ghost import Ghost
 from src.entities.blinky import Blinky
-from src.data.class_config.inky_config import InkyConfig
-from src.data.class_config.ghost_config import GhostConfig
-from src.data.class_config.teleport_config import TeleportConfig
 
 class Inky (Ghost):
     

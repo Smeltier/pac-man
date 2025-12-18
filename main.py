@@ -1,6 +1,6 @@
 import pygame
 
-from src.data.config_container import ConfigContainer
+from src.core.settings import Settings
 from src.core.environment import Environment
 from src.entities.pacman import PacMan
 from src.entities.blinky import Blinky
@@ -19,27 +19,26 @@ WIDTH, HEIGHT = 900, 950
 SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 CLOCK = pygame.time.Clock()
 
-config_container = ConfigContainer()
+settings = Settings('src/data/settings/config.json')
+teleport_data = settings.get("teleport")
 
 environment = Environment(
     screen = SCREEN, 
     maze_file = 'src/data/settings/default_maze.txt',
-    environment_config = config_container.environment,
-    hud_config = config_container.hud,
-    audio_manager_config = config_container.audio_manager,
-    maze_config = config_container.maze
 )
 
 cw = environment.cell_width
 ch = environment.cell_height
+
+pacman_data = settings.get("pacman")
+pacman_config = pacman_data | teleport_data
 
 environment.add_entity(
     PacMan (
         x = 15 * cw + cw // 2, 
         y = 18 * ch + ch // 2, 
         environment = environment,
-        pacman_config = config_container.pacman,
-        teleport_config = config_container.teleport
+        config = pacman_config
     )
 )
 

@@ -96,7 +96,7 @@ class Ghost (Entity):
         if self._current_mode == GhostState.SCATTER:
             self._release_ghost_from_house()
 
-    def get_collision_rectangle(self) -> pygame.Rect:
+    def get_collision_rectangle (self) -> pygame.Rect:
         collision_rectangle = pygame.Rect(0, 0, 32, 32)
         collision_rectangle.center = (int(self.position.x), int(self.position.y))
         return collision_rectangle

@@ -1,9 +1,6 @@
 import pygame
 
 from src.entities.ghost import Ghost
-from src.data.class_config.pinky_config import PinkyConfig
-from src.data.class_config.ghost_config import GhostConfig
-from src.data.class_config.teleport_config import TeleportConfig
 
 class Pinky (Ghost):
 

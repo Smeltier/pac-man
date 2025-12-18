@@ -1,39 +1,40 @@
 import pygame
 
-from src.entities.entity                   import Entity
-from src.core.states                       import GhostState, GameState 
-from src.data.class_config.pacman_config   import PacmanConfig
-from src.data.class_config.teleport_config import TeleportConfig
+from src.entities.entity import Entity
+from src.core.states     import GhostState, GameState 
 
 class PacMan (Entity):
 
-    def __init__ (self, x, y, environment, pacman_config: PacmanConfig, teleport_config: TeleportConfig) -> None:
+    def __init__ (self, x: float, y: float, environment, config: dict, assets: dict) -> None:
         super().__init__(x, y, environment)
 
-        self.SPEED                   = pacman_config.SPEED
-        self.ANIMATION_SPEED_SECONDS = pacman_config.ANIMATION_SPEED_SECONDS
-        self.COLLISION_RECT_SIZE     = pacman_config.COLLISION_RECT_SIZE
-        self.SMALL_PELLET_POINTS     = pacman_config.SMALL_PELLET_POINTS
-        self.POWER_PELLET_POINTS     = pacman_config.POWER_PELLET_POINTS
-        self.GHOST_BASE_POINTS       = pacman_config.GHOST_BASE_POINTS
+        self._speed = config.get("speed", 2)
+        self._animation_speed_seconds = config.get("animation_speed_seconds", 0.04)
+        self._collision_rect_size = config.get("collision_rect_size", 32)
 
-        self.TELEPORT_MIN_X      = teleport_config.TELEPORT_MIN_X
-        self.TELEPORT_MAX_X      = teleport_config.TELEPORT_MAX_X
-        self.TELEPORT_WRAP_X_MIN = teleport_config.TELEPORT_WRAP_X_MIN
-        self.TELEPORT_WRAP_X_MAX = teleport_config.TELEPORT_WRAP_X_MAX
+        points_config = config.get("points", {})
+        self._small_pellet_points = points_config.get("small_pellet", 10)
+        self._power_pellet_points = points_config.get("power_pellet", 20)
+        self._ghost_base_points = points_config.get("ghost_base", 100)
 
-        self._start_position        = pygame.Vector2(x, y)
-        self._previous_orientation  = 0
-        self._current_orientation   = 0
-        self._next_orientation      = 0
-        self._animation_timer_s     = 0.0
+        teleport_config = config.get("teleport")
+        self._teleport_min_x = teleport_config.get("min_x")
+        self._teleport_max_x = teleport_config.get("max_x")
+        self._teleport_wrap_x_min = teleport_config.get("wrap_x_min")
+        self._teleport_wrap_x_max = teleport_config.get("wrap_x_max")
+
+        self._start_position = pygame.Vector2(x, y)
+        self._previous_orientation = 0
+        self._current_orientation = 0
+        self._next_orientation = 0
+        self._animation_timer_s = 0.0
         self._animation_frame_index = 0
-        self._total_points          = 0
-        self._ghosts_eaten_streak   = 0 
-        self._sprites               = self._load_sprites()
+        self._total_points = 0
+        self._ghosts_eaten_streak = 0
+        self._sprites_move = assets.get("move")
 
-    def update (self, delta_time) -> None:
-        if self._ENVIRONMENT.game_state != GameState.GAME_OVER:
+    def update (self, delta_time: float) -> None:
+        if self._environment.game_state != GameState.GAME_OVER:
             self._update_orientation(pygame.key.get_pressed())
             self._handle_movement()
             self._update_sprite(delta_time)
@@ -53,19 +54,19 @@ class PacMan (Entity):
         screen.blit(rotated_sprite, rectangle)
 
     def handle_death(self):
-        self._ENVIRONMENT.audio_manager.stop_waka()
-        self._ENVIRONMENT.handle_player_death()
+        self._environment.audio_manager.stop_waka()
+        self._environment.handle_player_death()
 
     def reset(self) -> None:
         self.position = self._start_position.copy()
         self._current_orientation = 0
         self._next_orientation    = 0
         self._animation_frame_index = 0
-        self._ENVIRONMENT.audio_manager.stop_waka()
+        self._environment.audio_manager.stop_waka()
         self._ghosts_eaten_streak = 0
         
-    def get_rect(self) -> pygame.Rect:
-        collision_rect = pygame.Rect(0, 0, self.COLLISION_RECT_SIZE, self.COLLISION_RECT_SIZE)
+    def get_collision_rectangle (self) -> pygame.Rect:
+        collision_rect = pygame.Rect(0, 0, self._collision_rect_size, self._collision_rect_size)
         collision_rect.center = (int(self.position.x), int(self.position.y))
         return collision_rect
     
@@ -82,19 +83,19 @@ class PacMan (Entity):
         elif direction == 4: col += 1
         elif direction == 0: return True
 
-        if self._check_matrix_limits(row, col) and self._ENVIRONMENT.matrix[row][col] != -1:
+        if self._check_matrix_limits(row, col) and self._environment.matrix[row][col] != -1:
             return True
 
         return False
 
     def _check_matrix_limits (self, row, col) -> bool:
-        matrix_height = len(self._ENVIRONMENT.matrix)
-        matrix_width  = len(self._ENVIRONMENT.matrix[0])
+        matrix_height = len(self._environment.matrix)
+        matrix_width  = len(self._environment.matrix[0])
         return (0 <= row < matrix_height) and (0 <= col < matrix_width)
 
     def _get_grid_coordinates(self) -> tuple[int, int]:
-        row = int(self.position.y // self._ENVIRONMENT.cell_height)
-        col = int(self.position.x // self._ENVIRONMENT.cell_width)
+        row = int(self.position.y // self._environment.cell_height)
+        col = int(self.position.x // self._environment.cell_width)
         return row, col
 
     def _handle_movement(self) -> None:
@@ -107,18 +108,18 @@ class PacMan (Entity):
             elif not self._can_move(self._current_orientation):
                 self._current_orientation = 0
         
-        if   self._current_orientation == 1: self.position.y -= self.SPEED
-        elif self._current_orientation == 2: self.position.y += self.SPEED
-        elif self._current_orientation == 3: self.position.x -= self.SPEED
-        elif self._current_orientation == 4: self.position.x += self.SPEED
+        if   self._current_orientation == 1: self.position.y -= self._speed
+        elif self._current_orientation == 2: self.position.y += self._speed
+        elif self._current_orientation == 3: self.position.x -= self._speed
+        elif self._current_orientation == 4: self.position.x += self._speed
 
         self._handle_teleport()
 
     def _handle_teleport(self) -> None:
-        if self.position.x <= self.TELEPORT_MIN_X: 
-            self.position.x = self.TELEPORT_WRAP_X_MIN
-        if self.position.x >= self.TELEPORT_MAX_X: 
-            self.position.x = self.TELEPORT_WRAP_X_MAX
+        if self.position.x <= self._teleport_min_x: 
+            self.position.x = self._teleport_wrap_x_min
+        if self.position.x >= self._teleport_max_x: 
+            self.position.x = self._teleport_wrap_x_max
 
     def _align_to_grid_center(self) -> bool:
         row, col = self._get_grid_coordinates()
@@ -148,7 +149,7 @@ class PacMan (Entity):
                 
         return sprites
 
-    def _play_eat_sound(self):
+    def _play_eat_sound(self) -> None:
         row, col = self._get_grid_coordinates()
         if not self._check_matrix_limits(row, col):
             self._ENVIRONMENT.audio_manager.stop_waka()
@@ -208,7 +209,7 @@ class PacMan (Entity):
 
         self._previous_orientation = self._current_orientation
 
-    def _check_collisions(self):
+    def _check_collisions(self) -> None:
         from src.entities.ghost import Ghost
         
         pacman_rect = self.get_rect()
