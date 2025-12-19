@@ -1,29 +1,47 @@
 import pygame
 
-from src.data.class_config.audio_manager_config import AudioManagerConfig   
-from src.data.class_config.environment_config import EnvironmentConfig
-from src.data.class_config.hud_config import HUDConfig
-from src.data.class_config.maze_config import MazeConfig
 from src.core.states import GameState
 from src.core.states import GhostState
 from src.core.audio_manager import AudioManager
 from src.world.maze import Maze
 from src.ui.hud import HUD
 
-class Environment ():
+class Environment:
 
-    def __init__ (self, screen, maze_file: str, environment_config: EnvironmentConfig, hud_config: HUDConfig, audio_manager_config: AudioManagerConfig, maze_config: MazeConfig):
+    _vulnerable_duration_ms: int
+    _chase_duration_ms: int
+    _scatter_duration_ms: int
+    _game_over_screen_duration_ms: int
+    _initial_lives: int
+    _screen: pygame.Surface
+    _game_state: GameState
+    _entities: list
+    _lives_remaining: int
+    _vulnerable_timer_ms: int
+    _game_over_start_time_ms: int
+    _global_mode_change_time_ms: int
+    _current_global_ghost_mode: GhostState
+    _maze: Maze
+    _hud: HUD
+    _audio_manager: AudioManager
+    _cell_width: int
+    _cell_height: int
+    _maze_matrix: list
 
-        self.VULNERABLE_DURATION_MS = environment_config.VULNERABLE_DURATION_MS
-        self.CHASE_DURATION_MS = environment_config.CHASE_DURATION_MS
-        self.SCATTER_DURATION_MS = environment_config.SCATTER_DURATION_MS
-        self.GAME_OVER_SCREEN_DURATION_MS = environment_config.GAME_OVER_SCREEN_DURATION_MS
-        self.INITIAL_LIVES = environment_config.INITIAL_LIVES
+    def __init__(self, screen: pygame.Surface, maze_file: str, config: dict):
+        env_config: dict = config.get("environment", {})
+        self._initial_lives = env_config.get("initial_lives", 3)
+        
+        durations: dict = env_config.get("durations_ms", {})
+        self._vulnerable_duration_ms = durations.get("vulnerable", 7000)
+        self._chase_duration_ms = durations.get("chase", 20000)
+        self._scatter_duration_ms = durations.get("scatter", 7000)
+        self._game_over_screen_duration_ms = durations.get("game_over_screen", 4000)
 
         self._screen = screen
         self._game_state = GameState.CHASE
         self._entities = []
-        self._lives_remaining = self.INITIAL_LIVES
+        self._lives_remaining = self._initial_lives
 
         self._vulnerable_timer_ms = 0
         self._game_over_start_time_ms = 0
@@ -33,9 +51,9 @@ class Environment ():
         cell_width  = screen.get_width() // 30
         cell_height = screen.get_height() // 32
 
-        self._maze = Maze(maze_file, cell_width, cell_height, maze_config)
-        self._hud  = HUD(screen, hud_config)
-        self._audio_manager = AudioManager(audio_manager_config)
+        self._maze = Maze(maze_file, cell_width, cell_height, config.get("maze", {}))
+        self._hud = HUD(screen, config.get("hud", {}))
+        self._audio_manager = AudioManager(config.get("audio_manager", {}))
 
         self._maze_matrix = self._maze.matrix
         self._cell_width = self._maze.cell_width
@@ -54,7 +72,7 @@ class Environment ():
         for entity in self._entities[:]:
             entity.update(delta_time)
 
-    def draw (self) -> None:
+    def draw(self) -> None:
         self._screen.fill('black')
         
         self._maze.draw_walls(self._screen)
@@ -73,14 +91,14 @@ class Environment ():
         if self._game_state == GameState.VICTORY:
             self._hud.draw_victory()
 
-    def add_entity (self, entity) -> None:
+    def add_entity(self, entity) -> None:
         if entity is None:
             raise ValueError('Entidade inválida.')
 
         if entity not in self._entities:
             self._entities.append(entity)
     
-    def remove_entity (self, entity) -> None:
+    def remove_entity(self, entity) -> None:
         self._entities = [e for e in self._entities if e is not entity]
 
     def set_vulnerable(self) -> None:
@@ -93,7 +111,7 @@ class Environment ():
 
         self._vulnerable_timer_ms = pygame.time.get_ticks()
     
-    def set_chase (self) -> None:
+    def set_chase(self) -> None:
         self._game_state = GameState.CHASE
         self._audio_manager.play_chase()
 
@@ -114,20 +132,40 @@ class Environment ():
         
         self._game_over_start_time_ms = pygame.time.get_ticks()
 
-    def get_global_ghost_mode (self) -> GhostState:
+    def get_global_ghost_mode(self) -> GhostState:
         now = pygame.time.get_ticks()
 
         if self._current_global_ghost_mode == GhostState.SCATTER:
-            if now - self._global_mode_change_time_ms > self.SCATTER_DURATION_MS:
+            if now - self._global_mode_change_time_ms > self._scatter_duration_ms:
                 self._current_global_ghost_mode = GhostState.CHASE
                 self._global_mode_change_time_ms = now
         else:
-            if now - self._global_mode_change_time_ms > self.CHASE_DURATION_MS:
+            if now - self._global_mode_change_time_ms > self._chase_duration_ms:
                 self._current_global_ghost_mode = GhostState.SCATTER
                 self._global_mode_change_time_ms = now
 
         return self._current_global_ghost_mode
-    
+
+    def _reset_level(self):
+        pygame.time.delay(1000) 
+        self.set_chase()
+        self._global_mode_change_time_ms = pygame.time.get_ticks()
+        self._current_global_ghost_mode = GhostState.SCATTER
+
+        for entity in self._entities:
+            if hasattr(entity, 'reset'):
+                entity.reset()
+
+    def _handle_end_game_timer(self):
+        now = pygame.time.get_ticks()
+        if now - self._game_over_start_time_ms > self._game_over_screen_duration_ms:
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+    def _check_vulnerable_timeout(self):
+        now = pygame.time.get_ticks()
+        if now - self._vulnerable_timer_ms > self._vulnerable_duration_ms:
+            self.set_chase()
+
     @property
     def game_state(self):
         return self._game_state
@@ -155,23 +193,3 @@ class Environment ():
     @property
     def maze(self):
         return self._maze
-
-    def _reset_level(self):
-        pygame.time.delay(1000) 
-        self.set_chase()
-        self._global_mode_change_time_ms = pygame.time.get_ticks()
-        self._current_global_ghost_mode = GhostState.SCATTER
-
-        for entity in self._entities:
-            if hasattr(entity, 'reset'):
-                entity.reset()
-
-    def _handle_end_game_timer(self):
-        now = pygame.time.get_ticks()
-        if now - self._game_over_start_time_ms > self.GAME_OVER_SCREEN_DURATION_MS:
-            pygame.event.post(pygame.event.Event(pygame.QUIT))
-
-    def _check_vulnerable_timeout(self):
-        now = pygame.time.get_ticks()
-        if now - self._vulnerable_timer_ms > self.VULNERABLE_DURATION_MS:
-            self.set_chase()
