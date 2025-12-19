@@ -1,35 +1,31 @@
 import random
-import pygame
-
 from abc import abstractmethod
 
-from src.core.states                       import GhostState, GameState 
-from src.entities.entity                   import Entity
-from src.data.class_config.ghost_config    import GhostConfig
-from src.data.class_config.teleport_config import TeleportConfig
+import pygame
 
-class Ghost (Entity):
+from src.entities.entity import Entity
+from src.core.states import GhostState, GameState 
+
+class Ghost(Entity):
     
-    OPPOSITE_ORIENTATION = {1: 2, 2: 1, 3: 4, 4: 3, 0: 0}
+    OPPOSITE_ORIENTATION: dict = { 1: 2, 2: 1, 3: 4, 4: 3, 0: 0 }
 
-    def __init__(self, x, y, environment, sprite_paths: dict[int, str], ghost_config: GhostConfig, teleport_config: TeleportConfig):
-        super().__init__(x, y, environment)
+    def __init__(self, x, y, environment, config: dict, assets: dict):
+        super().__init__(x, y, environment, config.get("teleport", {}))
 
-        self.NORMAL_SPEED = ghost_config.NORMAL_SPEED
-        self.EATEN_SPEED = ghost_config.EATEN_SPEED
-        self.HOUSE_RESPAWN_TIME_MS = ghost_config.HOUSE_RESPAWN_TIME_MS
-        self.SCATTER_TARGET = ghost_config.SCATTER_TARGET
-        self.HOUSE_EXIT_POSITION = ghost_config.HOUSE_EXIT_POSITION
-        self.HOUSE_DOOR_POSITION = ghost_config.HOUSE_DOOR_POSITION
-        self.HOUSE_WAIT_POSITION = ghost_config.HOUSE_WAIT_POSITION
+        self._house_respawn_time_ms = config.get("spawn_time", 1)
 
-        self.TELEPORT_MIN_X      = teleport_config.TELEPORT_MIN_X
-        self.TELEPORT_MAX_X      = teleport_config.TELEPORT_MAX_X
-        self.TELEPORT_WRAP_X_MIN = teleport_config.TELEPORT_WRAP_X_MIN
-        self.TELEPORT_WRAP_X_MAX = teleport_config.TELEPORT_WRAP_X_MAX
+        speed_config: dict = config.get("speed", {})
+        self._normal_speed = speed_config.get("normal", 1)
+        self._eaten_speed = speed_config.get("eaten", 1)
 
-        self._start_position = pygame.Vector2(x, y)
-        self._current_speed = self.NORMAL_SPEED 
+        positions_config: dict = config.get("positions", {})
+        self._scatter_target_tile = positions_config.get("scatter_target", (0, 0))
+        self._house_exit_position = positions_config.get("house_exit", (0, 0))
+        self._house_door_position = positions_config.get("house_door", (0, 0))
+        self._house_wait_position = positions_config.get("house_wait", (0, 0))
+
+        self._current_speed = self._normal_speed 
         self._current_orientation = 4 
         
         self._start_mode = GhostState.IN_HOUSE
@@ -40,20 +36,20 @@ class Ghost (Entity):
         
         self._exit_timer_ms = 0 
         
-        self._directional_sprites = self._load_directional_sprites(sprite_paths)
-        self._vulnerable_sprites = self._load_vulnerable_sprites()
-        self._eaten_sprites = self._load_eaten_sprites()
+        self._directional_sprites = assets.get("directional")
+        self._vulnerable_sprites = assets.get("vulnerable")
+        self._eaten_sprites = assets.get("eaten")
         
         self._vulnerable_animation_timer_ms = 0.0
         self._vulnerable_animation_frame_index = 0
         self._vulnerable_animation_speed_ms = 0.15 
 
-    def update(self, delta_time):
-        if self._ENVIRONMENT.game_state == GameState.GAME_OVER: 
+    def update(self, delta_time: float) -> None:
+        if self._environment.game_state == GameState.GAME_OVER: 
             return
 
-        pacman = self._ENVIRONMENT.entities[0] 
-        all_ghosts = [entity for entity in self._ENVIRONMENT.entities if isinstance(entity, Ghost)]
+        pacman = self._environment.entities[0] 
+        all_ghosts = [entity for entity in self._environment.entities if isinstance(entity, Ghost)]
         
         self._synchronize_immunity_with_game_state()
         
@@ -89,7 +85,7 @@ class Ghost (Entity):
         self.position = self._start_position.copy()
         self._current_orientation = 4
         self._current_mode = self._start_mode
-        self._current_speed = self.NORMAL_SPEED
+        self._current_speed = self._normal_speed
         self._exit_timer_ms = 0
         self._is_immune = False
 
@@ -104,16 +100,9 @@ class Ghost (Entity):
     def get_ghost(self, all_ghosts, ghost_class):
         return next((ghost for ghost in all_ghosts if isinstance(ghost, ghost_class)), None)
 
-    @abstractmethod
-    def _compute_target_tile(self, pacman, all_ghosts) -> tuple:
-        raise NotImplementedError("A subclasse deve implementar _compute_target_tile")
-    
-    @abstractmethod
-    def _should_exit_house(self, pacman, all_ghosts) -> bool:
-        raise NotImplementedError("A subclasse deve implementar _should_exit_house")
     
     def _synchronize_immunity_with_game_state(self):
-        current_game_state = self._ENVIRONMENT.game_state
+        current_game_state = self._environment.game_state
         
         if (current_game_state == GameState.VULNERABLE and 
             self._last_game_state != GameState.VULNERABLE):
@@ -122,7 +111,7 @@ class Ghost (Entity):
         self._last_game_state = current_game_state
 
     def _update_ghost_behavior_state(self, pacman, all_ghosts):
-        game_mode = self._ENVIRONMENT.game_state
+        game_mode = self._environment.game_state
 
         if self._current_mode == GhostState.IN_HOUSE:
             if self._should_exit_house(pacman, all_ghosts):
@@ -131,7 +120,7 @@ class Ghost (Entity):
 
         if self._current_mode == GhostState.EATEN:
             current_row, current_column = self._get_grid_coordinates()
-            door_row, door_column = self.HOUSE_DOOR_POSITION
+            door_row, door_column = self._house_door_position
             
             if abs(current_row - door_row) < 1 and abs(current_column - door_column) < 1:
                 self._enter_house_to_respawn()
@@ -143,13 +132,13 @@ class Ghost (Entity):
                 if self._current_mode != GhostState.EATEN and not self._is_immune:
                     self._current_mode = GhostState.VULNERABLE
                 elif self._is_immune:
-                     self._current_mode = self._ENVIRONMENT.get_global_ghost_mode()
+                     self._current_mode = self._environment.get_global_ghost_mode()
             
             elif self._previous_mode == GhostState.VULNERABLE and game_mode != GameState.VULNERABLE:
-                 self._current_mode = self._ENVIRONMENT.get_global_ghost_mode()
+                 self._current_mode = self._environment.get_global_ghost_mode()
             
             elif game_mode == GameState.CHASE:
-                 self._current_mode = self._ENVIRONMENT.get_global_ghost_mode()
+                 self._current_mode = self._environment.get_global_ghost_mode()
 
     def _handle_direction_reversal_on_state_change(self):
         if self._current_mode != self._previous_mode:
@@ -162,7 +151,7 @@ class Ghost (Entity):
                 self._current_orientation = self.OPPOSITE_ORIENTATION[self._current_orientation]
 
     def _process_movement_physics(self, pacman, all_ghosts):
-        if self._ENVIRONMENT.game_state == GameState.GAME_OVER: 
+        if self._environment.game_state == GameState.GAME_OVER: 
             return
 
         if self._align_to_grid_center():
@@ -196,9 +185,9 @@ class Ghost (Entity):
         if self._current_mode == GhostState.CHASE:
             target_tile = self._compute_target_tile(pacman, all_ghosts)
         elif self._current_mode == GhostState.SCATTER:
-            target_tile = self.SCATTER_TARGET_TILE
+            target_tile = self._scatter_target_tile
         elif self._current_mode == GhostState.EATEN:
-            target_tile = self.HOUSE_DOOR_POSITION
+            target_tile = self._house_door_position
 
         if target_tile is None: 
             return random.choice(valid_choices)
@@ -217,11 +206,12 @@ class Ghost (Entity):
 
     def _apply_velocity(self):
         if self._current_mode == GhostState.EATEN:
-            self._current_speed = self.EATEN_SPEED
+            self._current_speed = self._eaten_speed
         elif self._current_mode == GhostState.VULNERABLE:
-            self._current_speed = self.NORMAL_SPEED * 0.75
+            down_factor: float = 0.75
+            self._current_speed = self._normal_speed * down_factor
         else:
-            self._current_speed = self.NORMAL_SPEED
+            self._current_speed = self._normal_speed
 
         if self._current_orientation == 1: self.position.y -= self._current_speed
         elif self._current_orientation == 2: self.position.y += self._current_speed
@@ -230,7 +220,7 @@ class Ghost (Entity):
 
     def _align_to_grid_center(self):
         current_row, current_column = self._get_grid_coordinates()
-        cell_width, cell_height = self._ENVIRONMENT.cell_width, self._ENVIRONMENT.cell_height
+        cell_width, cell_height = self._environment.cell_width, self._environment.cell_height
         
         center_x = current_column * cell_width + cell_width / 2
         center_y = current_row * cell_height + cell_height / 2
@@ -253,8 +243,8 @@ class Ghost (Entity):
         elif direction == 3: current_column -= 1 
         elif direction == 4: current_column += 1 
 
-        maze_matrix = self._ENVIRONMENT.matrix
-        original_layout = self._ENVIRONMENT._maze.maze_layout 
+        maze_matrix = self._environment.matrix
+        original_layout = self._environment._maze.maze_layout 
 
         if current_row < 0 or current_column < 0 or current_row >= len(maze_matrix) or current_column >= len(maze_matrix[0]):
             return False
@@ -274,30 +264,30 @@ class Ghost (Entity):
         return valid_directions_count > 1
 
     def _get_grid_coordinates(self):
-        row = int(self.position.y // self._ENVIRONMENT.cell_height)
-        col = int(self.position.x // self._ENVIRONMENT.cell_width)
+        row = int(self.position.y // self._environment.cell_height)
+        col = int(self.position.x // self._environment.cell_width)
         return row, col
 
     def _release_ghost_from_house(self):
-        cell_width = self._ENVIRONMENT.cell_width
-        cell_height = self._ENVIRONMENT.cell_height
-        house_exit_row, house_exit_column = self.HOUSE_EXIT_POSITION
+        cell_width = self._environment.cell_width
+        cell_height = self._environment.cell_height
+        house_exit_row, house_exit_column = self._house_exit_position
         
         self.position = pygame.Vector2(x = house_exit_column * cell_width + cell_width // 2, y = house_exit_row * cell_height + cell_height // 2)
-        self._current_mode = self._ENVIRONMENT.get_global_ghost_mode()
+        self._current_mode = self._environment.get_global_ghost_mode()
         self._current_orientation = 1 
         self._exit_timer_ms = 0
 
     def _enter_house_to_respawn(self):
         self._current_mode = GhostState.IN_HOUSE
-        self._current_speed = self.NORMAL_SPEED
+        self._current_speed = self._normal_speed
 
-        cell_width = self._ENVIRONMENT.cell_width
-        cell_height = self._ENVIRONMENT.cell_height
-        house_wait_row, house_wait_column = self.HOUSE_WAIT_POSITION
+        cell_width = self._environment.cell_width
+        cell_height = self._environment.cell_height
+        house_wait_row, house_wait_column = self._house_wait_position
 
         self.position = pygame.Vector2(x = house_wait_column * cell_width + cell_width / 2, y = house_wait_row * cell_height + cell_height / 2)
-        self._exit_timer_ms = pygame.time.get_ticks() + self.HOUSE_RESPAWN_TIME_MS
+        self._exit_timer_ms = pygame.time.get_ticks() + self._house_respawn_time_ms
 
     def _update_animation_frames(self, delta_time):
         if self._current_mode == GhostState.VULNERABLE:
@@ -310,55 +300,10 @@ class Ghost (Entity):
         elif self._current_mode in [GhostState.CHASE, GhostState.SCATTER]:
             pass 
 
-    def _handle_teleport(self) -> None:
-        if self.position.x <= self.TELEPORT_MIN_X: 
-            self.position.x = self.TELEPORT_WRAP_X_MIN
-        if self.position.x >= self.TELEPORT_MAX_X: 
-            self.position.x = self.TELEPORT_WRAP_X_MAX
-
-    def _load_directional_sprites(self, paths: dict[int, str]) -> dict[int, pygame.Surface]:
-        sprites = {}
-
-        for direction, path in paths.items():
-            try:
-                image = pygame.image.load(path)
-                sprites[direction] = pygame.transform.scale(image, (40, 40))
-
-            except pygame.error:
-                sprites[direction] = pygame.Surface((40, 40), pygame.SRCALPHA)
-
-        return sprites
-
-    def _load_vulnerable_sprites(self) -> list[pygame.Surface]:
-        vulnerable_sprites = []
-
-        try:
-            sprite_blue = pygame.image.load('src/data/images/vulnerable_sprite.png')
-            sprite_white = pygame.image.load('src/data/images/vulnerable_sprite_white.png')
-            vulnerable_sprites.append(pygame.transform.scale(sprite_blue, (40, 40)))
-            vulnerable_sprites.append(pygame.transform.scale(sprite_white, (40, 40)))
-
-        except pygame.error:
-            empty = pygame.Surface((40, 40), pygame.SRCALPHA)
-            vulnerable_sprites = [empty, empty]
-
-        return vulnerable_sprites
-
-    def _load_eaten_sprites(self) -> dict[int, pygame.Surface]:
-        eaten_sprites = {}
-        eaten_paths = {
-            1: 'src/data/images/eyes_up.png',    
-            2: 'src/data/images/eyes_down.png',  
-            3: 'src/data/images/eyes_left.png',  
-            4: 'src/data/images/eyes_right.png', 
-        }
-
-        for direction, path in eaten_paths.items():
-            try:
-                img = pygame.image.load(path)
-                eaten_sprites[direction] = pygame.transform.scale(img, (40, 40))
-
-            except pygame.error:
-                eaten_sprites[direction] = pygame.Surface((40, 40), pygame.SRCALPHA)
-
-        return eaten_sprites
+    @abstractmethod
+    def _compute_target_tile(self, pacman, all_ghosts) -> tuple[int, int]:
+        pass
+    
+    @abstractmethod
+    def _should_exit_house(self, pacman, all_ghosts) -> bool:
+        pass

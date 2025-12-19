@@ -4,30 +4,24 @@ from src.entities.ghost import Ghost
 
 class Pinky (Ghost):
 
-    def __init__(self, x, y, environment, ghost_config: GhostConfig, pinky_config: PinkyConfig, teleport_config: TeleportConfig):
-        sprite_paths = {
-            1: 'src/data/images/pinky_up.png',    
-            2: 'src/data/images/pinky_down.png',  
-            3: 'src/data/images/pinky_left.png',  
-            4: 'src/data/images/pinky_right.png', 
-        }
+    def __init__(self, x, y, environment, config: dict, assets: dict):
+        super().__init__(x, y, environment, config, assets)
 
-        super().__init__(x, y, environment, sprite_paths, ghost_config, teleport_config)
-
-        self.PINKY_SCATTER_TARGET  = pinky_config.PINKY_SCATTER_TARGET
-        self.INITIAL_EXIT_DELAY_MS = pinky_config.INITIAL_EXIT_DELAY_MS
-        self.CHASE_OFFSET          = pinky_config.CHASE_OFFSET
+        pinky_config: dict = config.get("pinky", {})
+        self._initial_exit_delay_ms = config.get("initial_exit_delay", 0)
+        self._chase_offset = pinky_config.get("chase_offset", 0)
+        self._scatter_target_tile = pinky_config.get("scatter_target", (0, 0))
         
-        self.SCATTER_TARGET_TILE = self.PINKY_SCATTER_TARGET
-        self._exit_timer_ms = pygame.time.get_ticks() + self.INITIAL_EXIT_DELAY_MS
+        self._exit_timer_ms = pygame.time.get_ticks() + self._initial_exit_delay_ms
 
-    def _compute_target_tile(self, pacman, all_ghosts):
+    def _compute_target_tile(self, pacman, all_ghosts) -> tuple[int, int]:
         prow, pcol = pacman._get_grid_coordinates()
         
-        if pacman._current_orientation == 1:    prow -= self.CHASE_OFFSET
-        elif pacman._current_orientation == 2:  prow += self.CHASE_OFFSET
-        elif pacman._current_orientation == 3:  pcol -= self.CHASE_OFFSET
-        elif pacman._current_orientation == 4:  pcol += self.CHASE_OFFSET
+        if pacman._current_orientation == 1:    prow -= self._chase_offset
+        elif pacman._current_orientation == 2:  prow += self._chase_offset
+        elif pacman._current_orientation == 3:  pcol -= self._chase_offset
+        elif pacman._current_orientation == 4:  pcol += self._chase_offset
+
         return (prow, pcol)
     
     def _should_exit_house(self, pacman, all_ghosts) -> bool:
