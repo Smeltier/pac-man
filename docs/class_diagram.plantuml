@@ -15,19 +15,131 @@ skinparam ClassDiagram {
     ArrowFontStyle plain
 }
 
+enum GameState {
+    CHASE
+    VULNERABLE
+    PAUSE
+    GAME_OVER
+    VICTORY
+}
+
+enum GhostState {
+    IN_HOUSE
+    EXITING
+    CHASE
+    VULNERABLE
+    EATEN
+}
+
+class Settings {
+    - path: str
+    - data: dict
+
+    + Settings (path: str)
+    + get (key: str, default: Any) : dict
+    - load_data () : dict
+}
+
+class Game {
+}
+
+class Environment {
+}
+
+class HUD {
+    - padding: int
+    - text_font_size: int
+    - game_over_font_size: int
+    - score_color: str
+    - lives_color: str
+    - game_over_color: str
+    - victory_color: str
+    - screen: Surface
+    - screen_width: int
+    - screen_height: int
+    - text_font: Font
+    - game_over_font: Font
+
+    + HUD (screen: Surface, config: dict)
+    + draw_score (score: int, lives: int) : None
+    + draw_game_over () : None
+    + draw_victory () : None
+    - initialize_fonts () : None
+    - draw_score_text (score: int) : None
+    - draw_lives_text (lives: int) : None
+    - draw_centered_message (message: str, color: str) : None
+}
+
+class AudioManager {
+    - music_volume: float
+    - waka_volume: float
+    - siren_chase_path: str
+    - siren_vulnerable_path: str
+    - waka_path: str
+    - eat_sound: play_eat_sound
+
+    + AudioManager (config: dict)
+    + play_chase () : None
+    + play_vulnerable () : None
+    + stop_waka () : None
+    - play_music (path: str) : None
+}
+
+class Maze {
+    - wall_color: str
+    - door_color: str
+    - small_pellet_color: str
+    - power_pellet_color: str
+    - wall_code_vertical: int
+    - wall_code_horizontal: int
+    - wall_code_arc_tl: int
+    - wall_code_arc_tr: int
+    - wall_code_arc_br: int
+    - wall_code_arc_bl: int
+    - wall_code_door: int
+    - cell_width: int
+    - cell_height: int
+    - maze_rows: int
+    - maze_cols: int
+    - total_tablets: int
+    - maze_layout: list[list[int]]
+    - matrix: list[list[int]]
+    - wall_surface: Surface
+
+    + Maze (maze_file: str, cell_width: int, cell_height: int, config: dict)
+    + draw_walls (screen: Surface) : None
+    + draw_tablets (screen: Surface) : None
+    - load_maze_layout (maze_file: str) : list[list[int]]
+    - load_wall_matrix () : list[list[int]]
+    - count_tablets () : int
+    - create_wall_surface () : Surface
+}
+
 abstract class Entity {
     - position: Vector2D
     - environment: Environment
+    - start_position: Vector2D
+    - teleport_min_x: int 
+    - teleport_max_x: int
+    - teleport_wrap_x_min: int
+    - teleport_wrap_x_max: int
+    - collision_rect_size: int
 
-    + Entity (x: float, y: float, environment: Environment)
+    + Entity (x: float, y: float, environment: Environment, config: dict)
     + get_position () : Vector2D
     + set_position (new_position: Vector2D) : None
     {abstract} + update (delta_time: float) : None
     {abstract} + draw (screen: Screen) : None
     {abstract} + reset () : None
+    - handle_teleport () : None
 }
 
 class PacMan extends Entity {
+    - speed: int
+    - animation_speed_seconds: float
+    - small_pellets_points: int
+    - power_pellets_points: int
+    - ghost_base_points: int
     - start_position: Vector2D
     - previous_orientation: int
     - current_orientation: int
@@ -36,11 +148,9 @@ class PacMan extends Entity {
     - animation_frame_index: int
     - total_points: int
     - ghosts_eaten_streak: int
-    - sprites: Surfaces
-    - pacman_config: PacManConfig
-    - teleport_config: TeleportConfig
+    - sprites_move: list[Surface]
 
-    + PacMan (x: float, y: float, environment: Environment, pacman_config: PacManConfig, teleport_config: TeleportConfig)
+    + PacMan (x: float, y: float, environment: Environment, config: dict, assets: dict)
     + handle_death () : None
     + get_collision_rectangle (): Rect
     + get_total_points () : int
@@ -48,11 +158,9 @@ class PacMan extends Entity {
     - check_matrix_limits (row: int, col: int) : bool
     - get_grid_coordinates () : tuple
     - handle_movement () : None
-    - handle_teleport () : None
     - align_to_grid_center () : bool
-    - load_sprites () : Surfaces
     - play_eat_sound () : None
-    - update_orientation (keys: Keys) : None
+    - update_orientation (keys: list[Key]) : None
     - update_score_and_map () : None
     - update_sprite (delta_time: int) : None
     - process_pellet_interaction () : None
@@ -60,7 +168,6 @@ class PacMan extends Entity {
 }
 
 abstract class Ghost extends Entity {
-    - start_position: Vector2D
     - current_speed: int
     - current_orientation: int
     - start_mode: GhostState
@@ -75,10 +182,8 @@ abstract class Ghost extends Entity {
     - directional_sprites: dict[int, Surface]
     - vulnerable_sprites: list[Surface]
     - eaten_sprites: list[Surface]
-    - ghost_config: GhostConfig
-    - teleport_config: TeleportConfig
 
-    + Ghost (x: float, y: float, environment: Environment, ghost_config: GhostConfig, teleport_config: TeleportConfig)
+    + Ghost (x: float, y: float, environment: Environment, config: dict, assets: dict)
     + set_eaten () : None
     + get_collision_rectangle () : Rect
     + get_ghost (all_ghosts: Ghosts, ghost_class: Class) : Ghost
@@ -91,32 +196,46 @@ abstract class Ghost extends Entity {
     - align_to_grid_center () : bool
     - is_move_valid (direction: int) : bool
     - is_intersection () : bool
-    - get_grid_coordinates () : tuple
+    - get_grid_coordinates () : tuple[int, int]
     - release_ghost_from_house () : None
     - enter_house_to_respawn () : None
     - update_animation_frames (delta_time: float) : None
     - handle_teleport () : None
-    - load_directional_sprites (paths: dict[int, str]) : dict[int, Surface]
-    - load_vulnerable_sprites () : list[Surface]
-    - load_eaten_sprites () : dict[int, Surface]
-    {abstract} - compute_target_tile (pacman: PacMan, all_ghosts: Ghosts) : tuple
+    {abstract} - compute_target_tile (pacman: PacMan, all_ghosts: Ghosts) : tuple[int, int]
     {abstract} - should_exit_house (pacman: PacMan, all_ghosts: Ghosts) : bool
 }
 
 class Pinky extends Ghost {
-    + Pinky (x: float, y: float, environment: Environment, ghost_config: GhostConfig, pinky_config: PinkyConfig, teleport_config: TeleportConfig)
+    + Pinky (x: float, y: float, environment: Environment, config: dict, assets: dict)
 }
 
 class Blinky extends Ghost {
-    + Blinky (x: float, y: float, environment: Environment, ghost_config: GhostConfig, blinky_config: BlinkyConfig, teleport_config: TeleportConfig)
+    - chase_offset: int
+    - initial_exit_delay_ms: int
+
+    + Blinky (x: float, y: float, environment: Environment, config: dict, assets: dict)
 }
 
 class Clyde extends Ghost {
-    + Clyde (x: float, y: float, environment: Environment, ghost_config: GhostConfig, clyde_config: ClydeConfig, teleport_config: TeleportConfig)
+    - points_required_to_exit: int
+    - distance_threshold_squared: int
+
+    + Clyde (x: float, y: float, environment: Environment, config: dict, assets: dict)
 }
 
 class Inky extends Ghost {
-    + Inky (x: float, y: float, environment: Environment, ghost_config: GhostConfig, inky_config: InkyConfig, teleport_config: TeleportConfig)
+    - chase_offset: int
+    - points_required_to_exit: int
+
+    + Inky (x: float, y: float, environment: Environment, config: dict, assets: dict)
 }
+
+Ghost ..> PacMan
+
+Environment *--> "1" AudioManager
+Environment *--> "1" HUD
+Environment *--> "1" Maze
+
+Environment "1" o--- "0..*" Entity
 
 @enduml
