@@ -12,11 +12,9 @@ class PacMan(Entity):
 
     _speed: float
     _animation_speed_seconds: float
-    _collision_rect_size: int
     _small_pellet_points: int
     _power_pellet_points: int
     _ghost_base_points: int
-    _start_position: pygame.Vector2
     _previous_orientation: int
     _current_orientation: int
     _next_orientation: int
@@ -24,18 +22,20 @@ class PacMan(Entity):
     _animation_frame_index: int
     _total_points: int
     _ghosts_eaten_streak: int
+    _sprites_move: list[pygame.Surface]
 
     def __init__(self, x: float, y: float, environment: "Environment", config: dict, assets: dict) -> None:
-        super().__init__(x, y, environment, config.get("teleport"))
+        super().__init__(x, y, environment, config)
 
         self._speed = config.get("speed", 2)
-        self._animation_speed_seconds = config.get("animation_speed_seconds", 0.04)
-        self._collision_rect_size = config.get("collision_rect_size", 32)
+        self._animation_speed_seconds = config.get("animation_speed_seconds", 0.02)
 
         points_config: dict = config.get("points", {})
         self._small_pellet_points = points_config.get("small_pellet", 10)
         self._power_pellet_points = points_config.get("power_pellet", 20)
         self._ghost_base_points = points_config.get("ghost_base", 100)
+
+        self._sprites_move = assets.get("move", [])
 
         self._previous_orientation = 0
         self._current_orientation = 0
@@ -44,7 +44,6 @@ class PacMan(Entity):
         self._animation_frame_index = 0
         self._total_points = 0
         self._ghosts_eaten_streak = 0
-        self._sprites_move = assets.get("move", [])
 
     def update(self, delta_time: float) -> None:
         if self._environment.game_state != GameState.GAME_OVER:
@@ -135,26 +134,12 @@ class PacMan(Entity):
         center_x = (col * cell_width) + (cell_width / 2)
         center_y = (row * cell_height) + (cell_height / 2)
 
-        if abs(self.position.x - center_x) < self.SPEED and abs(self.position.y - center_y) < self._speed:
+        if abs(self.position.x - center_x) < self._speed and abs(self.position.y - center_y) < self._speed:
             self.position.x = center_x
             self.position.y = center_y
             return True
 
         return False
-
-    def _load_sprites(self) -> list[pygame.Surface]:
-        sprites = []
-        for count in range(0, 3):
-            try:
-                image  = pygame.image.load(f'src/data/images/pacman_eat_{count}.png')
-                sprite = pygame.transform.scale(image, (40, 40))
-                sprites.append(sprite)
-
-            except pygame.error as e:
-                print(f"Erro: {e}")
-                sprites.append(pygame.Surface((40, 40), pygame.SRCALPHA))
-                
-        return sprites
 
     def _play_eat_sound(self) -> None:
         row, col = self._get_grid_coordinates()

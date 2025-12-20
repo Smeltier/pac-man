@@ -7,10 +7,9 @@ class Pinky (Ghost):
     def __init__(self, x, y, environment, config: dict, assets: dict):
         super().__init__(x, y, environment, config, assets)
 
-        pinky_config: dict = config.get("pinky", {})
         self._initial_exit_delay_ms = config.get("initial_exit_delay", 0)
-        self._chase_offset = pinky_config.get("chase_offset", 0)
-        self._scatter_target_tile = pinky_config.get("scatter_target", (0, 0))
+        self._chase_offset = config.get("chase_offset", 0)
+        self._scatter_target_tile = config.get("scatter_target", (0, 0))
         
         self._exit_timer_ms = pygame.time.get_ticks() + self._initial_exit_delay_ms
 

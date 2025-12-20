@@ -7,23 +7,49 @@ from src.entities.entity import Entity
 from src.core.states import GhostState, GameState 
 
 class Ghost(Entity):
+
+    _house_respawn_time_ms: int
+    _normal_speed: int
+    _eaten_speed: int
+    _scatter_target_tile: tuple[int, int]
+    _house_exit_position: tuple[int, int]
+    _house_door_position: tuple[int, int]
+    _house_wait_position: tuple[int, int]
+    _directional_sprites: dict[int, pygame.Surface]
+    _vulnerable_sprites: list[pygame.Surface]
+    _eaten_sprites: list[pygame.Surface]
+    _current_speed: int
+    _current_orientation: int
+    _start_mode: GhostState
+    _current_mode: GhostState
+    _previous_mode: GhostState
+    _last_game_state: GameState
+    _is_immune: bool
+    _exit_timer_ms: int
+    _vulnerable_animation_timer_ms: float
+    _vulnerable_animation_speed_ms: float
+    _vulnerable_animation_frame_index: int
     
     OPPOSITE_ORIENTATION: dict = { 1: 2, 2: 1, 3: 4, 4: 3, 0: 0 }
 
     def __init__(self, x, y, environment, config: dict, assets: dict):
-        super().__init__(x, y, environment, config.get("teleport", {}))
+        super().__init__(x, y, environment, config)
 
         self._house_respawn_time_ms = config.get("spawn_time", 1)
+        self._scatter_target_tile = config.get("scatter_target", (0, 0))
 
         speed_config: dict = config.get("speed", {})
         self._normal_speed = speed_config.get("normal", 1)
         self._eaten_speed = speed_config.get("eaten", 1)
 
         positions_config: dict = config.get("positions", {})
-        self._scatter_target_tile = positions_config.get("scatter_target", (0, 0))
         self._house_exit_position = positions_config.get("house_exit", (0, 0))
         self._house_door_position = positions_config.get("house_door", (0, 0))
         self._house_wait_position = positions_config.get("house_wait", (0, 0))
+
+        self._directional_sprites = assets.get("directional")
+        self._vulnerable_sprites = assets.get("vulnerable")
+        self._eaten_sprites = assets.get("eaten")
 
         self._current_speed = self._normal_speed 
         self._current_orientation = 4 
@@ -35,11 +61,6 @@ class Ghost(Entity):
         self._is_immune = False 
         
         self._exit_timer_ms = 0 
-        
-        self._directional_sprites = assets.get("directional")
-        self._vulnerable_sprites = assets.get("vulnerable")
-        self._eaten_sprites = assets.get("eaten")
-        
         self._vulnerable_animation_timer_ms = 0.0
         self._vulnerable_animation_frame_index = 0
         self._vulnerable_animation_speed_ms = 0.15 
@@ -93,7 +114,7 @@ class Ghost(Entity):
             self._release_ghost_from_house()
 
     def get_collision_rectangle (self) -> pygame.Rect:
-        collision_rectangle = pygame.Rect(0, 0, 32, 32)
+        collision_rectangle = pygame.Rect(0, 0, self._collision_rect_size, self._collision_rect_size)
         collision_rectangle.center = (int(self.position.x), int(self.position.y))
         return collision_rectangle
 

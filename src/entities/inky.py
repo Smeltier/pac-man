@@ -6,10 +6,9 @@ class Inky (Ghost):
     def __init__(self, x, y, environment, config: dict, assets: dict):
         super().__init__(x, y, environment, config, assets)
 
-        inky_config: dict = config.get("inky", {})
-        self._chase_offset = inky_config.get("chase_offset", 0)
-        self._scatter_target_tile = inky_config.get("scatter_target", (0, 0))
-        self._points_required_to_exit = inky_config.get("points_to_exit", 0)
+        self._chase_offset = config.get("chase_offset", 0)
+        self._scatter_target_tile = config.get("scatter_target", (0, 0))
+        self._points_required_to_exit = config.get("points_to_exit", 0)
 
     def _compute_target_tile(self, pacman, all_ghosts) -> tuple[int, int]:
         blinky = self.get_ghost(all_ghosts, Blinky)

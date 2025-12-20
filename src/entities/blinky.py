@@ -8,9 +8,6 @@ class Blinky(Ghost):
     def __init__(self, x, y, environment, config: dict, assets: dict):
         super().__init__(x, y, environment, config, assets)
 
-        blinky_config: dict = config.get("blinky")
-        self._scatter_target_tile = blinky_config.get("scatter_target")
-
         self._start_mode = GhostState.SCATTER
         self._current_mode = GhostState.SCATTER
 

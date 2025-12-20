@@ -15,9 +15,10 @@ class Entity(ABC):
     _teleport_max_x: int
     _teleport_wrap_x_min: int
     _teleport_wrap_x_max: int
+    _collision_rect_size: int
     
     def __init__(self, x: float, y: float, environment: "Environment", config: dict) -> None:
-        self._start_position = pygame.Vector2(x, y)
+        self._start_position = pygame.Vector2((x, y))
         self._position = pygame.Vector2((x, y))
         self._environment = environment
 
@@ -25,6 +26,7 @@ class Entity(ABC):
         self._teleport_max_x = config.get("max_x", 0)
         self._teleport_wrap_x_min = config.get("wrap_x_min", 0)
         self._teleport_wrap_x_max = config.get("wrap_x_max", 0)
+        self._collision_rect_size = config.get("collision_rect_size", 32)
 
     @abstractmethod
     def update(self, delta_time: float) -> None:
