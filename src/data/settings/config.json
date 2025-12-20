@@ -13,6 +13,7 @@
         "speed": 2,
         "animation_speed_seconds": 0.04,
         "collision_rect_size": 32,
+        "start_grid_pos": [18, 15],
         "points": {
             "small_pellet": 10,
             "power_pellet": 20,
@@ -26,11 +27,11 @@
             "eaten": 6
         },
         "positions": {
-            "scatter_target": [0, 0],
             "house_exit": [12, 14],
             "house_door": [13, 14],
             "house_wait": [14, 14]
         },
+        "collision_rect_size": 32,
         "spawn_time": 3000
     },
 
@@ -87,7 +88,7 @@
             "wall": "blue",
             "door": "white",
             "small_pellet": "white",
-            "power_pellet": "white"
+            "power_pellet": "cyan"
         },
         "radius": {
             "small_pellet": 2,
