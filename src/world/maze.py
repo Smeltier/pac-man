@@ -31,7 +31,7 @@ class Maze:
         self._wall_color = colors_config.get("wall", "blue")
         self._door_color = colors_config.get("door", "white")
         self._small_pellet_color = colors_config.get("small_pellet", "white")
-        self._power_pellet_color = colors_config.get("power_pellet", "white")
+        self._power_pellet_color = colors_config.get("power_pellet", "blue")
 
         radius_config: dict = config.get("radius", {})
         self._small_pellet_radius = radius_config.get("small_pellet", 2)
