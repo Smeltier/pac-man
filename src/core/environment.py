@@ -51,9 +51,9 @@ class Environment:
         cell_width  = screen.get_width() // 30
         cell_height = screen.get_height() // 32
 
-        self._maze = Maze(maze_file, cell_width, cell_height, config.get("maze", {}))
-        self._hud = HUD(screen, config.get("hud", {}))
-        self._audio_manager = AudioManager(config.get("audio_manager", {}))
+        self._maze = Maze(maze_file, cell_width, cell_height, config)
+        self._hud = HUD(screen, config)
+        self._audio_manager = AudioManager(config)
 
         self._maze_matrix = self._maze.matrix
         self._cell_width = self._maze.cell_width
