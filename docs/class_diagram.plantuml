@@ -3,8 +3,8 @@
 skinparam linetype ortho
 left to right direction
 skinparam classArrowColor black
-skinparam nodesep 80
-skinparam ranksep 80
+skinparam nodesep 120
+skinparam ranksep 120
 skinparam ClassDiagram {
     ArrowThickness 1
     ArrowColor black
@@ -44,6 +44,32 @@ class Game {
 }
 
 class Environment {
+    - screen: Surface
+    - vulnerable_duration_ms: int
+    - chase_duration_ms: int
+    - vulnerable_timer_ms: int
+    - scatter_duration_ms: int
+    - game_over_start_time_ms: int
+    - global_mode_change_time_ms: int
+    - game_over_screen_duration_ms: int
+    - initial_lives: int
+    - lives_remaining: int
+    - cell_width: int
+    - cell_height: int
+
+    + Environment (screen: Surface, maze_file: str, config: dict)
+    + update (delta_time: float) : None
+    + draw () : None
+    + add_entity (entity: Entity) : None
+    + remove_entity (entity: Entity) : None
+    + set_vulnerable () : None
+    + set_chase () : None
+    + handle_player_death () : None
+    + handle_victory () : None
+    + get_global_ghost_mode () : GhostState
+    - reset_level () : None
+    - handle_end_game_timer () : None
+    - check_vulnerable_timeout () : None
 }
 
 class HUD {
@@ -117,7 +143,6 @@ class Maze {
 
 abstract class Entity {
     - position: Vector2D
-    - environment: Environment
     - start_position: Vector2D
     - teleport_min_x: int 
     - teleport_max_x: int
@@ -168,12 +193,15 @@ class PacMan extends Entity {
 }
 
 abstract class Ghost extends Entity {
+    - house_respawn_time_ms: int
+    - normal_speed: int
+    - eaten_speed: int
+    - scatter_target_tile: tuple[int, int]
+    - house_exit_position: tuple[int, int]
+    - house_door_position: tuple[int, int]
+    - house_wait_position: tuple[int, int]
     - current_speed: int
     - current_orientation: int
-    - start_mode: GhostState
-    - current_mode: GhostState
-    - previous_mode: GhostState
-    - last_game_state: GameState
     - is_immune: bool
     - exit_timer_ms: int
     - vulnerable_animation_timer_ms: float
@@ -231,11 +259,22 @@ class Inky extends Ghost {
 }
 
 Ghost ..> PacMan
+Ghost o--> "1 current_mode" GhostState
+Ghost o--> "1 start_mode" GhostState
+Ghost o--> "1 previous_mode" GhostState
+Ghost o--> "1 last_game_state" GameState
 
-Environment *--> "1" AudioManager
-Environment *--> "1" HUD
-Environment *--> "1" Maze
+Environment *--> "1 audio_manager" AudioManager
+Environment *--> "1 hud" HUD
+Environment *--> "1 maze" Maze
+Environment o--> "1 game_state" GameState
+Environment o--> "1 current_global_ghost_mode" GhostState
+Environment "1 environment" o--- "0..* entities" Entity
 
-Environment "1" o--- "0..*" Entity
+Settings <.. Environment
+Settings <.. AudioManager
+Settings <.. Maze
+Settings <.. HUD
+Settings <.. Entity
 
 @enduml
