@@ -63,9 +63,9 @@
             "waka_volume": 0.4
         },
         "paths": {
-            "siren_chase": "src/data/sounds/siren_background_sound.wav",
-            "siren_vulnerable": "src/data/sounds/power_up_sound.wav",
-            "waka_path": "src/data/sounds/waka_waka.wav"
+            "siren_chase": "data/sounds/siren_background_sound.wav",
+            "siren_vulnerable": "data/sounds/power_up_sound.wav",
+            "waka_path": "data/sounds/waka_waka.wav"
         }
     },
 

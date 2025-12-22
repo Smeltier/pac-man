@@ -12,7 +12,7 @@ from src.entities.inky import Inky
 
 def load_image(path: str, scale: tuple = None) -> pygame.Surface:
     try:
-        full_path = os.path.join("src", "data", "images", path)
+        full_path = os.path.join("data", "images", path)
         image = pygame.image.load(full_path).convert_alpha()
         if scale:
             image = pygame.transform.scale(image, scale)
@@ -66,7 +66,7 @@ def main():
     SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
     CLOCK = pygame.time.Clock()
 
-    settings = Settings('src/data/settings/config.json')
+    settings = Settings('data/settings/config.json')
     
     teleport_config: dict = settings.get("teleport", {})
     ghost_config: dict = settings.get("ghost", {})
@@ -82,7 +82,7 @@ def main():
 
     environment = Environment(
         screen=SCREEN, 
-        maze_file='src/data/settings/default_maze.txt', 
+        maze_file='data/settings/default_maze.txt', 
         config=environment_config | maze_config | audio_manager_config | hud_config
     )
 
