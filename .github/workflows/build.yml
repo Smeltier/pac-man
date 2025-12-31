@@ -1,0 +1,37 @@
+name: Criar Jogo Pacman
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Buildar em ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+    - name: Baixar código
+      uses: actions/checkout@v4
+
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9.6'
+
+    - name: Instalar Dependências
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Gerar Executável
+      run: pyinstaller --noconsole --onefile --name Pacman_Game main.py
+
+    - name: Guardar o Arquivo (Upload)
+      uses: actions/upload-artifact@v4
+      with:
+        name: Pacman-${{ matrix.os }}
+        path: dist/
