@@ -1,8 +1,8 @@
 name: Criar Jogo Pacman
 
 on:
-  push:
-    branches: [ "main" ]
+  # push:
+    # branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
     - name: Baixar código

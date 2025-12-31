@@ -1,6 +1,8 @@
+import os
+import sys
+
 import pygame
 import json
-import os
 
 from src.core.environment import Environment
 from src.core.settings import Settings
@@ -10,9 +12,14 @@ from src.entities.clyde import Clyde
 from src.entities.pinky import Pinky
 from src.entities.inky import Inky
 
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def load_image(path: str, scale: tuple = None) -> pygame.Surface:
     try:
-        full_path = os.path.join("data", "images", path)
+        full_path = os.path.join(BASE_DIR, "data", "images", path)
         image = pygame.image.load(full_path).convert_alpha()
         if scale:
             image = pygame.transform.scale(image, scale)
@@ -66,7 +73,8 @@ def main():
     SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
     CLOCK = pygame.time.Clock()
 
-    settings = Settings('data/settings/config.json')
+    config_path = os.path.join(BASE_DIR, 'data', 'settings', 'config.json')
+    settings = Settings(config_path)
     
     teleport_config: dict = settings.get("teleport", {})
     ghost_config: dict = settings.get("ghost", {})
@@ -80,10 +88,12 @@ def main():
     clyde_config: dict = settings.get("clyde", {})
     pinky_config: dict = settings.get("pinky", {})
 
+    maze_file_path = os.path.join(BASE_DIR, 'data', 'settings', 'default_maze.txt')
+
     environment = Environment(
-        screen=SCREEN, 
-        maze_file='data/settings/default_maze.txt', 
-        config=environment_config | maze_config | audio_manager_config | hud_config
+        screen = SCREEN, 
+        maze_file = maze_file_path, 
+        config = environment_config | maze_config | audio_manager_config | hud_config
     )
 
     cw, ch = environment.cell_width, environment.cell_height
