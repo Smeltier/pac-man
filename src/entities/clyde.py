@@ -18,7 +18,7 @@ class Clyde(Ghost):
         prow, pcol = pacman._get_grid_coordinates()
         grow, gcol = self._get_grid_coordinates()
 
-        distance_sq = (prow - grow)**2 + (pcol - gcol)**2
+        distance_sq = (prow - grow) ** 2 + (pcol - gcol) ** 2
         
         if distance_sq > self._distance_threshold_squared: 
             return (prow, pcol)
