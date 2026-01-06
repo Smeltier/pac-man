@@ -37,7 +37,7 @@ class GhostDirector:
         self._paused = False
 
     def set_paused(self, is_paused: bool):
-        """ Pausa o ciclo (usado quando fantasmas estão vulneráveis). """
+        """ Pausa o ciclo. """
         self._paused = is_paused
 
     def _switch_mode(self, new_mode: GhostState, time_ms: int):
