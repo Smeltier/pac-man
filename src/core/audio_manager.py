@@ -1,6 +1,7 @@
 import pygame
 
 class AudioManager:
+    """ Classe responsável por gerir todos os Audios do jogo. """
 
     _music_volume: float
     _waka_volume: float
@@ -34,14 +35,17 @@ class AudioManager:
              pass
 
     def play_chase(self) -> None:
+        """ Toca o som padrão de persequição. """
         if self._siren_chase_path:
             self._play_music(self._siren_chase_path)
 
     def play_vulnerable(self) -> None:
+        """ Toca o som padrão dos fantasmas vulneráveis. """
         if self._siren_vulnerable_path:
             self._play_music(self._siren_vulnerable_path)
 
     def play_waka(self) -> None:
+        """ Toca o som Waka-Waka, do PacMan. """
         if not self._eat_sound: 
             return 
         
@@ -49,12 +53,20 @@ class AudioManager:
             self._eat_sound.play(loops=-1)
     
     def stop_waka(self) -> None:
+        """ Para de tocar o som Waka-Waka, do PacMan. """
         if self._eat_sound:
             self._eat_sound.stop()
 
     def _play_music(self, path: str) -> None:
+        """
+        Toca uma música a partir do caminho dela nos arquivos.
+        
+        :param path: Caminho aonde se localiza a música.
+        :type path: str
+        """
         try:
             pygame.mixer.music.load(path)
-            pygame.mixer.music.play(loops=-1)
+            pygame.mixer.music.play(loops = -1)
+
         except pygame.error as e:
             print(f"Erro ao carregar música '{path}': {e}")
