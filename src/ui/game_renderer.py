@@ -3,6 +3,8 @@ import pygame
 from src.core.states import GameState
 
 class GameRenderer:
+
+    _screen: pygame.Surface
     
     def __init__(self, screen: pygame.Surface):
         self._screen = screen
