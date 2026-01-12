@@ -1,18 +1,19 @@
 @startuml diagrama_de_classes
 
 skinparam linetype ortho
-left to right direction
-skinparam classArrowColor black
-skinparam nodesep 120
-skinparam ranksep 120
-skinparam ClassDiagram {
-    ArrowThickness 1
-    ArrowColor black
-    HorizontalSpacing 60
-    VerticalSpacing 60
-    ArrowFontSize 11
-    ArrowFontColor black
-    ArrowFontStyle plain
+skinparam pathHoverColor blue
+skinparam shadowing true
+skinparam backgroundColor #FDFDFD
+skinparam roundcorner 10
+skinparam nodesep 150
+skinparam ranksep 150
+
+skinparam class {
+    BackgroundColor White
+    ArrowColor #34495E
+    BorderColor #2C3E50
+    HeaderBackgroundColor #ECF0F1
+    FontSize 12
 }
 
 enum GameState {
@@ -41,35 +42,70 @@ class Settings {
 }
 
 class Game {
+    - fps: int
+    - width: float
+    - height: float
+    - running: bool
+
+    + Game (width: float, height: float, fps: int)
+    + run (config_path: str) : None
+    - handle_event () : None
+    - initial_config (config_path: str) : GameManager
 }
 
-class Environment {
+class GameManager {
     - screen: Surface
-    - vulnerable_duration_ms: int
-    - chase_duration_ms: int
-    - vulnerable_timer_ms: int
-    - scatter_duration_ms: int
-    - game_over_start_time_ms: int
-    - global_mode_change_time_ms: int
-    - game_over_screen_duration_ms: int
-    - initial_lives: int
     - lives_remaining: int
-    - cell_width: int
-    - cell_height: int
+    - vulnerable_duration_ms: int
+    - game_over_screen_duration_ms: int
+    - vulnerable_timer_ms: int
+    - game_over_start_time_ms: int
 
-    + Environment (screen: Surface, maze_file: str, config: dict)
+    + GameManager (screen: Surface, maze_file: str, config: dict)
     + update (delta_time: float) : None
     + draw () : None
     + add_entity (entity: Entity) : None
     + remove_entity (entity: Entity) : None
-    + set_vulnerable () : None
+    + set_vulerable () : None
     + set_chase () : None
     + handle_player_death () : None
     + handle_victory () : None
     + get_global_ghost_mode () : GhostState
+    + get_game_state () : GameState
+    + get_lives () : int
+    + get_entities () : list[Entity]
+    + get_maze () : Maze
+    + get_audio_manager () : AudioManager
+    + get_renderer () : GameRenderer
+    + get_ghost_director () : GhostDirector
+    + get_screen_width () : int
+    + get_screen_height () : int
     - reset_level () : None
     - handle_end_game_timer () : None
     - check_vulnerable_timeout () : None
+}
+
+class GameRenderer {
+    - screen: Surface
+
+    + GameRenderer (screen: Surface)
+    + render (maze: Maze, entitites: list[Entity], game_state: GameState, score: int, lives: int) : None
+    - draw_pellets (maze: Maze) : None
+}
+
+class GhostDirector {
+    - chase_duration_ms: int
+    - scatter_duration_ms: int
+    - last_switch_time: int
+    - paused: bool
+
+    + GhostDirector (config: dict)
+    + update (current_time_ms: int) : None
+    + reset () : None
+    + is_paused () : bool
+    + get_current_mode () : GhostState
+    + set_paused (is_paused: bool) : None
+    - switch_mode (new_mode: GhostState, time_ms: int) : None
 }
 
 class HUD {
@@ -116,27 +152,37 @@ class Maze {
     - door_color: str
     - small_pellet_color: str
     - power_pellet_color: str
-    - wall_code_vertical: int
-    - wall_code_horizontal: int
-    - wall_code_arc_tl: int
-    - wall_code_arc_tr: int
-    - wall_code_arc_br: int
-    - wall_code_arc_bl: int
-    - wall_code_door: int
+    - small_pellet_radius: int
+    - power_pellet_radius: int
+    - wall_codes: dict
     - cell_width: int
     - cell_height: int
     - maze_rows: int
     - maze_cols: int
-    - total_tablets: int
     - maze_layout: list[list[int]]
     - matrix: list[list[int]]
+    - total_tablets: int
     - wall_surface: Surface
 
     + Maze (maze_file: str, cell_width: int, cell_height: int, config: dict)
-    + draw_walls (screen: Surface) : None
-    + draw_tablets (screen: Surface) : None
+    + eat_tablet () : None
+    + is_level_cleared () : bool
+    + get_matrix () : list[list[int]]
+    + get_maze_layout () : list[list[int]]
+    + get_wall_surface () : Surface
+    + get_total_tablets () : int
+    + get_rows () : int
+    + get_cols () : int
+    + get_cell_width () : int
+    + get_cell_height () : int
+    + get_wall_color () : str
+    + get_door_color () : str
+    + get_small_pellet_color () : str
+    + get_power_pellet_color () : str
+    + get_small_pellet_radius () : int
+    + get_power_pellet_radius () : int
     - load_maze_layout (maze_file: str) : list[list[int]]
-    - load_wall_matrix () : list[list[int]]
+    - load_wall_matrix (maze_file: str) : list[list[int]]
     - count_tablets () : int
     - create_wall_surface () : Surface
 }
@@ -144,14 +190,14 @@ class Maze {
 abstract class Entity {
     - position: Vector2D
     - start_position: Vector2D
-    - teleport_min_x: int 
-    - teleport_max_x: int
-    - teleport_wrap_x_min: int
-    - teleport_wrap_x_max: int
+    - teleport_x_limits: tuple[int, int]
+    - teleport_x_wrap: tuple[int, int]
     - collision_rect_size: int
 
-    + Entity (x: float, y: float, environment: Environment, config: dict)
+    + Entity (x: float, y: float, manager: GameManager, config: dict)
     + get_position () : Vector2D
+    + get_rect () : Rect
+    + get_start_position () : Vector2D
     + set_position (new_position: Vector2D) : None
     {abstract} + update (delta_time: float) : None
     {abstract} + draw (screen: Screen) : None
@@ -175,18 +221,17 @@ class PacMan extends Entity {
     - ghosts_eaten_streak: int
     - sprites_move: list[Surface]
 
-    + PacMan (x: float, y: float, environment: Environment, config: dict, assets: dict)
+    + PacMan (x: float, y: float, manager: GameManager, config: dict, assets: dict)
     + handle_death () : None
-    + get_collision_rectangle (): Rect
     + get_total_points () : int
+    + get_orientation () : int
+    + get_streak () : int
     - can_move (direction: int) : bool
     - check_matrix_limits (row: int, col: int) : bool
     - get_grid_coordinates () : tuple
     - handle_movement () : None
     - align_to_grid_center () : bool
-    - play_eat_sound () : None
     - update_orientation (keys: list[Key]) : None
-    - update_score_and_map () : None
     - update_sprite (delta_time: int) : None
     - process_pellet_interaction () : None
     - check_collisions () : None
@@ -200,21 +245,29 @@ abstract class Ghost extends Entity {
     - house_exit_position: tuple[int, int]
     - house_door_position: tuple[int, int]
     - house_wait_position: tuple[int, int]
+    - directional_sprites: dict[int, Surface]
+    - vulnerable_sprites: list[Surface]
+    - eaten_sprites: list[Surface]
     - current_speed: int
     - current_orientation: int
+    - start_mode: GhostState
+    - current_mode: GhostState
+    - previous_mode: GhostState
+    - last_game_state: GameState
     - is_immune: bool
     - exit_timer_ms: int
     - vulnerable_animation_timer_ms: float
     - vulnerable_animation_speed_ms: float
     - vulnerable_animation_frame_index: int
-    - directional_sprites: dict[int, Surface]
-    - vulnerable_sprites: list[Surface]
-    - eaten_sprites: list[Surface]
+    - {static} OPPOSITE_ORIENTATION: dict
 
     + Ghost (x: float, y: float, environment: Environment, config: dict, assets: dict)
     + set_eaten () : None
-    + get_collision_rectangle () : Rect
-    + get_ghost (all_ghosts: Ghosts, ghost_class: Class) : Ghost
+    + is_immune () : bool
+    + get_mode () : GhostState
+    + get_orientation () : int
+    + get_speed () : int
+    + get_scatter_target () : tuple[int, int]
     - synchronize_immunity_with_game_state () : None
     - update_ghost_behavior_state (pacman: PacMan, all_ghosts: Ghosts) : None
     - handle_direction_reversal_on_state_change () : None
@@ -228,20 +281,19 @@ abstract class Ghost extends Entity {
     - release_ghost_from_house () : None
     - enter_house_to_respawn () : None
     - update_animation_frames (delta_time: float) : None
-    - handle_teleport () : None
     {abstract} - compute_target_tile (pacman: PacMan, all_ghosts: Ghosts) : tuple[int, int]
     {abstract} - should_exit_house (pacman: PacMan, all_ghosts: Ghosts) : bool
 }
 
-class Pinky extends Ghost {
-    + Pinky (x: float, y: float, environment: Environment, config: dict, assets: dict)
+class Blinky extends Ghost {
+    + Blinky (x: float, y: float, environment: Environment, config: dict, assets: dict)
 }
 
-class Blinky extends Ghost {
+class Pinky extends Ghost {
     - chase_offset: int
     - initial_exit_delay_ms: int
 
-    + Blinky (x: float, y: float, environment: Environment, config: dict, assets: dict)
+    + Pinky (x: float, y: float, environment: Environment, config: dict, assets: dict)
 }
 
 class Clyde extends Ghost {
@@ -258,23 +310,27 @@ class Inky extends Ghost {
     + Inky (x: float, y: float, environment: Environment, config: dict, assets: dict)
 }
 
-Ghost ..> PacMan
-Ghost o--> "1 current_mode" GhostState
-Ghost o--> "1 start_mode" GhostState
-Ghost o--> "1 previous_mode" GhostState
+Ghost o-up-> "1 start_mode" GhostState
+Ghost o-down-> "1 current_mode" GhostState
+Ghost o-left-> "1 previous_mode" GhostState
 Ghost o--> "1 last_game_state" GameState
+GameManager o--> "1 game_state" GameState
+GhostDirector o-left-> "1 current_mode" GhostState
+GameManager "1 manager" o--- "0..* entities" Entity
+GameManager o--> "1 current_global_ghost_mode" GhostState
 
-Environment *--> "1 audio_manager" AudioManager
-Environment *--> "1 hud" HUD
-Environment *--> "1 maze" Maze
-Environment o--> "1 game_state" GameState
-Environment o--> "1 current_global_ghost_mode" GhostState
-Environment "1 environment" o--- "0..* entities" Entity
+GameManager *--> "1 audio_manager" AudioManager
+GameManager *--> "1 hud" HUD
+GameManager *-up-> "1 ghost_director" GhostDirector
+GameManager *-left-> "1 renderer" GameRenderer
+GameManager *--> "1 maze" Maze
 
-Settings <.. Environment
-Settings <.. AudioManager
-Settings <.. Maze
-Settings <.. HUD
-Settings <.. Entity
+Settings <.. GameManager: uses
+Ghost ..> PacMan: tracks
+Settings <.. AudioManager: uses
+Settings <.. Maze: uses
+Settings <.. HUD: uses
+Settings <.. Entity: uses
+Game ..> GameManager: uses
 
 @enduml

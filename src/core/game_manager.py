@@ -8,7 +8,7 @@ from src.core.states import GameState
 from src.world.maze import Maze
 from src.ui.hud import HUD
 
-class GameManager:
+class GameManager: 
 
     _ghost_director: GhostDirector
     _renderer: GameRenderer
