@@ -3,6 +3,12 @@ from src.core.states import GhostState
 
 class GhostDirector:
 
+    _chase_duration_ms: int
+    _scatter_duration_ms: int
+    _current_mode: GhostState
+    _last_switch_time: int
+    _paused: bool
+
     def __init__(self, config: dict):
         env_config = config.get("environment", {})
         durations = env_config.get("durations_ms", {})
