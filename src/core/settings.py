@@ -3,6 +3,9 @@ import json
 
 class Settings ():
 
+    _path: str
+    _data: dict
+
     def __init__ (self, path: str) -> None:
         self._path = path
         self._data = self._load_data()
