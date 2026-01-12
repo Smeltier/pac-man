@@ -7,6 +7,9 @@ if TYPE_CHECKING:
     from src.core.game_manager import GameManager
 
 class Clyde(Ghost):
+
+    _points_required_to_exit: int
+    _distance_threshold_squared: int
     
     def __init__(self, x: float, y: float, manager: "GameManager", config: dict, assets: dict):
         super().__init__(x, y, manager, config, assets)
