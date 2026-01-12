@@ -9,6 +9,9 @@ if TYPE_CHECKING:
     from src.core.game_manager import GameManager
 
 class Inky(Ghost):
+
+    _chase_offset: int
+    _points_required_to_exit: int
     
     def __init__(self, x: float, y: float, manager: "GameManager", config: dict, assets: dict):
         super().__init__(x, y, manager, config, assets)
