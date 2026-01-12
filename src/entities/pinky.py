@@ -9,6 +9,9 @@ if TYPE_CHECKING:
 
 class Pinky(Ghost):
 
+    _chase_offset: int
+    _initial_exit_delay_ms: int
+
     def __init__(self, x: float, y: float, manager: "GameManager", config: dict, assets: dict):
         super().__init__(x, y, manager, config, assets)
 
